@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { criarClienteBrowser } from "@/lib/supabase/client";
 import { salvarBriefing } from "@/lib/actions/jobs";
 import { fmtDataHora } from "@/lib/formato";
+import { SeletorArquivo } from "@/components/seletor-arquivo";
 import type { Database } from "@/lib/database.types";
 
 type Briefing = Database["public"]["Tables"]["briefing"]["Row"];
@@ -59,7 +60,7 @@ export function BriefingForm({ jobId, briefing, podeEditar }: { jobId: string; b
           <div><label className="label">Local da gravação (endereço completo) *</label><textarea className="input min-h-16" value={local} onChange={(e) => setLocal(e.target.value)} required /></div>
           <div><label className="label">Roteiro / instruções do job *</label><textarea className="input min-h-24" value={roteiro} onChange={(e) => setRoteiro(e.target.value)} required /></div>
           <div><label className="label">Observações do cliente</label><textarea className="input min-h-16" value={obs} onChange={(e) => setObs(e.target.value)} /></div>
-          <div><label className="label">Referência visual (imagem/PDF, máx. 10 MB)</label><input type="file" accept="image/*,application/pdf" className="block text-sm" onChange={(e) => setArquivo(e.target.files?.[0] ?? null)} /></div>
+          <div><label className="label">Referência visual (opcional)</label><SeletorArquivo arquivo={arquivo} onChange={setArquivo} rotulo="📎 Anexar imagem ou PDF" /></div>
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="size-5" checked={precisa99} onChange={(e) => setPrecisa99(e.target.checked)} /> Precisa de transporte (99)?</label>
           {erro && <p className="text-sm text-danger">{erro}</p>}
           <div className="flex gap-2">

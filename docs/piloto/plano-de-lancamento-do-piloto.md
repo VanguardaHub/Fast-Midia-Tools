@@ -40,7 +40,7 @@ Proposta: **piloto em duas ondas, com duração total de 3 semanas**, começando
 |---|---|---|---|---|---|
 | P1 | RIPD v1.0 e termo 2.0 aprovados internamente (sem DPO); definições confirmadas em 30/09; falta só o prazo contábil dos comprovantes (não bloqueia) | ✅ Concluído | RIPD aprovado e validado em 30/09 | Gerência | — |
 | P2 | Decisões 1 (rastreio na gravação) e 4 (BYOD) exercidas pela gerência; política BYOD publicada; comunicação aos Fasts | Necessário | Exercidas em 30/09; comunicar na sessão de onboarding | Gerência / Supervisora | D1 |
-| P3 | Fasts do piloto cadastrados com e-mail correto e login vinculado | **Bloqueador** | 1 de 2 prontos (Fast "teste" sem login) | Supervisora | D0 |
+| P3 | Fasts do piloto cadastrados com e-mail correto e login vinculado (roteiro em `docs/piloto/cadastro-dos-fasts.md`) | **Bloqueador** | Diana pronta; Fast "teste" desativado; demais aguardam nomes e e-mails | Supervisora | D0 |
 | P4 | Conta de serviço do Google + delegação em todo o domínio (ADR-0006); `GOOGLE_SERVICE_ACCOUNT_JSON` no Vercel | Necessário | Pendente | TI | onda 1 |
 | P5 | Resend: `RESEND_API_KEY`, `EMAIL_REMETENTE`, `EMAIL_SUPERVISORA` no Vercel | Necessário | Pendente | TI | onda 1 |
 | P6 | Teste em aparelho real (Android/Chrome e iOS/Safari): instalação, permissões, check-in, posição ao vivo, câmera, offline | Necessário | Não executado (validado por simulação) | Gerência + 1 Fast | D0–D1 |

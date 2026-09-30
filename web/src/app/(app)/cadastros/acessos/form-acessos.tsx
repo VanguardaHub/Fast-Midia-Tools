@@ -2,19 +2,48 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { alterarPerfilUsuario, criarConvite } from "@/lib/actions/cadastros";
+import { alterarPerfilUsuario, criarConvite, reenviarConvite, type ResultadoEnvioConvite } from "@/lib/actions/cadastros";
 
 type P = "fast" | "analista" | "supervisora" | "admin";
+
+function ResultadoConvite({ r }: { r: ResultadoEnvioConvite }) {
+  const [copiado, setCopiado] = useState(false);
+  if (!r.ok) return <p className="rounded-xl bg-danger/10 p-3 text-sm text-danger">{r.erro}</p>;
+  return (
+    <div className="space-y-2 rounded-xl bg-success/10 p-3 text-sm">
+      <p className="font-medium text-success">{r.emailEnviado ? "Convite enviado por e-mail." : "Link de acesso gerado."}</p>
+      {r.aviso && <p className="text-warning">{r.aviso}</p>}
+      <p className="text-muted">Link de uso único (também pode ser enviado por WhatsApp):</p>
+      <div className="flex gap-2">
+        <input className="input min-h-9 font-mono text-xs" readOnly value={r.link} onFocus={(e) => e.currentTarget.select()} />
+        <button type="button" className="btn-outline min-h-9 shrink-0 text-xs" onClick={async () => { try { await navigator.clipboard.writeText(r.link); setCopiado(true); setTimeout(() => setCopiado(false), 2000); } catch {} }}>
+          {copiado ? "Copiado" : "Copiar"}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export function FormConvite({ ehAdmin }: { ehAdmin: boolean }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [nome, setNome] = useState("");
   const [perfil, setPerfil] = useState<P>("analista");
-  const [msg, setMsg] = useState<string | null>(null);
+  const [resultado, setResultado] = useState<ResultadoEnvioConvite | null>(null);
   const [pendente, iniciar] = useTransition();
   return (
-    <form className="card space-y-3" onSubmit={(e) => { e.preventDefault(); iniciar(async () => { const r = await criarConvite({ email, nome, perfil }); setMsg(r.ok ? "Convite registrado. A pessoa já pode entrar com esse e-mail." : r.erro); if (r.ok) { setEmail(""); setNome(""); router.refresh(); } }); }}>
+    <form
+      className="card space-y-3"
+      onSubmit={(e) => {
+        e.preventDefault();
+        setResultado(null);
+        iniciar(async () => {
+          const r = await criarConvite({ email, nome, perfil });
+          setResultado(r);
+          if (r.ok) { setEmail(""); setNome(""); router.refresh(); }
+        });
+      }}
+    >
       <h2 className="font-semibold">Convidar acesso</h2>
       <div><label className="label">E-mail</label><input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
       <div><label className="label">Nome</label><input className="input" value={nome} onChange={(e) => setNome(e.target.value)} /></div>
@@ -27,9 +56,23 @@ export function FormConvite({ ehAdmin }: { ehAdmin: boolean }) {
           {ehAdmin && <option value="admin">Admin</option>}
         </select>
       </div>
-      {msg && <p className="text-sm">{msg}</p>}
-      <button className="btn-primary w-full" disabled={pendente}>Convidar</button>
+      {resultado && <ResultadoConvite r={resultado} />}
+      <button className="btn-primary w-full" disabled={pendente}>{pendente ? "Enviando…" : "Convidar e enviar link"}</button>
+      <p className="text-xs text-muted">Para Fasts, prefira cadastrar em Cadastros → Fasts com o e-mail do calendário e depois convidar aqui com o mesmo e-mail.</p>
     </form>
+  );
+}
+
+export function BotaoReenviar({ email }: { email: string }) {
+  const [resultado, setResultado] = useState<ResultadoEnvioConvite | null>(null);
+  const [pendente, iniciar] = useTransition();
+  return (
+    <div className="space-y-1">
+      <button type="button" className="text-xs text-primary underline" disabled={pendente} onClick={() => iniciar(async () => setResultado(await reenviarConvite(email)))}>
+        {pendente ? "gerando…" : "reenviar"}
+      </button>
+      {resultado && <ResultadoConvite r={resultado} />}
+    </div>
   );
 }
 

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { criarClienteServidor } from "@/lib/supabase/server";
 import { exigirGestao } from "@/lib/sessao";
 import { traduzirErro } from "@/lib/regras";
+import { gerarEEnviarConvite, type ResultadoConvite } from "@/lib/integracoes/convites";
 
 export type Resultado = { ok: true } | { ok: false; erro: string };
 
@@ -83,8 +84,10 @@ const ConviteSchema = z.object({
   perfil: z.enum(["fast", "analista", "supervisora", "admin"]),
 });
 
-/** RF-01 / RF-02 — convite de acesso (permite e-mail fora do domínio e define o perfil). */
-export async function criarConvite(entrada: z.infer<typeof ConviteSchema>): Promise<Resultado> {
+export type ResultadoEnvioConvite = { ok: false; erro: string } | { ok: true; link: string; emailEnviado: boolean; aviso?: string };
+
+/** RF-01 / RF-02 — convite de acesso: registra, gera link de uso único e envia por e-mail (Resend) quando configurado. */
+export async function criarConvite(entrada: z.infer<typeof ConviteSchema>): Promise<ResultadoEnvioConvite> {
   const s = await exigirGestao();
   const parse = ConviteSchema.safeParse(entrada);
   if (!parse.success) return { ok: false, erro: parse.error.issues.map((i) => i.message).join("; ") };
@@ -98,7 +101,20 @@ export async function criarConvite(entrada: z.infer<typeof ConviteSchema>): Prom
     .upsert({ email: d.email.toLowerCase(), nome: d.nome || null, perfil: d.perfil, criado_por: s.usuarioId }, { onConflict: "email" });
   if (error) return { ok: false, erro: traduzirErro(error.message) };
   revalidatePath("/cadastros/acessos");
-  return { ok: true };
+  const envio: ResultadoConvite = await gerarEEnviarConvite(d.email.toLowerCase(), d.nome || null, d.perfil, s.perfil.nome);
+  if (!envio.ok) return { ok: false, erro: envio.erro };
+  return { ok: true, link: envio.link, emailEnviado: envio.emailEnviado, aviso: envio.aviso };
+}
+
+/** Reenvia (gera novo link) para um convite ainda não usado ou para um usuário existente. */
+export async function reenviarConvite(email: string): Promise<ResultadoEnvioConvite> {
+  const s = await exigirGestao();
+  const supabase = await criarClienteServidor();
+  const { data: c } = await supabase.from("convite").select("email, nome, perfil").eq("email", email.toLowerCase()).maybeSingle();
+  if (!c) return { ok: false, erro: "Convite não encontrado." };
+  const envio = await gerarEEnviarConvite(c.email, c.nome, c.perfil, s.perfil.nome);
+  if (!envio.ok) return { ok: false, erro: envio.erro };
+  return { ok: true, link: envio.link, emailEnviado: envio.emailEnviado, aviso: envio.aviso };
 }
 
 export async function alterarPerfilUsuario(usuarioId: string, perfil: "fast" | "analista" | "supervisora" | "admin", ativo: boolean): Promise<Resultado> {

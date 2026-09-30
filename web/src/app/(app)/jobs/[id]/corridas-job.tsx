@@ -6,6 +6,7 @@ import { criarClienteBrowser } from "@/lib/supabase/client";
 import { validarCorrida } from "@/lib/actions/jobs";
 import { salvarCorrida } from "@/lib/actions/campo";
 import { fmtMoeda } from "@/lib/formato";
+import { SeletorArquivo } from "@/components/seletor-arquivo";
 import type { Database } from "@/lib/database.types";
 
 type Corrida = Database["public"]["Tables"]["corrida_99"]["Row"];
@@ -123,10 +124,7 @@ function CorridaCard({ jobId, sentido, corrida, url, ehGestao }: { jobId: string
             <div><label className="label">Origem</label><input className="input" value={origem} onChange={(e) => setOrigem(e.target.value)} /></div>
             <div><label className="label">Destino</label><input className="input" value={destino} onChange={(e) => setDestino(e.target.value)} /></div>
           </div>
-          <div>
-            <label className="label">Comprovante {corrida?.comprovante_path ? "(substituir)" : ""}</label>
-            <input type="file" accept="image/*,application/pdf" className="block w-full text-sm" onChange={(e) => setArquivo(e.target.files?.[0] ?? null)} />
-          </div>
+          <SeletorArquivo arquivo={arquivo} onChange={setArquivo} rotulo={corrida?.comprovante_path ? "📎 Substituir comprovante" : "📎 Anexar comprovante"} />
           {erro && <p className="text-danger">{erro}</p>}
           <div className="flex gap-2">
             <button type="button" className="btn-outline min-h-9 text-xs" onClick={() => { setEditando(false); setErro(null); }}>Cancelar</button>

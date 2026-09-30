@@ -1,26 +1,40 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { salvarCliente } from "@/lib/actions/cadastros";
 
-interface C { id: string; nome: string; grupo: string; pastaDriveId: string; pastaDriveUrl: string; contatoNome: string; contatoWhatsapp: string; ativo: boolean }
-const vazio: C = { id: "", nome: "", grupo: "", pastaDriveId: "", pastaDriveUrl: "", contatoNome: "", contatoWhatsapp: "", ativo: true };
+export interface ClienteForm { id: string; nome: string; grupo: string; pastaDriveId: string; pastaDriveUrl: string; contatoNome: string; contatoWhatsapp: string; ativo: boolean }
+const vazio: ClienteForm = { id: "", nome: "", grupo: "", pastaDriveId: "", pastaDriveUrl: "", contatoNome: "", contatoWhatsapp: "", ativo: true };
 
-export function FormCliente({ clientes }: { clientes: C[] }) {
+/** RF-16 — formulário de cliente (novo ou edição vinda da lista via `inicial`). */
+export function FormCliente({ inicial, hrefNovo }: { inicial?: ClienteForm | null; hrefNovo: string }) {
   const router = useRouter();
-  const [c, setC] = useState<C>(vazio);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [c, setC] = useState<ClienteForm>(inicial ?? vazio);
+  const [msg, setMsg] = useState<{ ok: boolean; texto: string } | null>(null);
   const [pendente, iniciar] = useTransition();
-  const set = (k: keyof C, v: string | boolean) => setC({ ...c, [k]: v });
+  const set = (k: keyof ClienteForm, v: string | boolean) => setC({ ...c, [k]: v });
+  const editando = Boolean(c.id);
+
   return (
-    <form className="card space-y-3" onSubmit={(e) => { e.preventDefault(); iniciar(async () => { const r = await salvarCliente({ ...c, id: c.id || undefined }); setMsg(r.ok ? "Salvo." : r.erro); if (r.ok) { setC(vazio); router.refresh(); } }); }}>
-      <div className="flex items-center justify-between">
-        <h2 className="font-semibold">{c.id ? "Editar cliente" : "Novo cliente"}</h2>
-        <select className="input min-h-9 w-40 text-xs" value={c.id} onChange={(e) => setC(clientes.find((x) => x.id === e.target.value) ?? vazio)}>
-          <option value="">— novo —</option>
-          {clientes.map((x) => <option key={x.id} value={x.id}>{x.nome}</option>)}
-        </select>
+    <form
+      className="card space-y-3"
+      onSubmit={(e) => {
+        e.preventDefault();
+        setMsg(null);
+        iniciar(async () => {
+          const r = await salvarCliente({ ...c, id: c.id || undefined });
+          if (!r.ok) { setMsg({ ok: false, texto: r.erro }); return; }
+          setMsg({ ok: true, texto: editando ? "Alterações salvas." : "Cliente cadastrado." });
+          if (!editando) setC(vazio);
+          router.refresh();
+        });
+      }}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="font-semibold">{editando ? `Editar cliente · ${inicial?.nome}` : "Novo cliente"}</h2>
+        {editando && <Link href={hrefNovo} className="text-xs text-primary underline">Cancelar edição</Link>}
       </div>
       <div><label className="label">Nome (igual à pasta no Drive)</label><input className="input" value={c.nome} onChange={(e) => set("nome", e.target.value)} required /></div>
       <div><label className="label">Grupo (pasta de grupo, se houver)</label><input className="input" value={c.grupo} onChange={(e) => set("grupo", e.target.value)} /></div>
@@ -30,9 +44,9 @@ export function FormCliente({ clientes }: { clientes: C[] }) {
         <div><label className="label">Contato</label><input className="input" value={c.contatoNome} onChange={(e) => set("contatoNome", e.target.value)} /></div>
         <div><label className="label">WhatsApp</label><input className="input" value={c.contatoWhatsapp} onChange={(e) => set("contatoWhatsapp", e.target.value)} /></div>
       </div>
-      <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="size-5" checked={c.ativo} onChange={(e) => set("ativo", e.target.checked)} /> Ativo</label>
-      {msg && <p className="text-sm">{msg}</p>}
-      <button className="btn-primary w-full" disabled={pendente}>Salvar</button>
+      <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="size-5" checked={c.ativo} onChange={(e) => set("ativo", e.target.checked)} /> Ativo (aparece na agenda)</label>
+      {msg && <p className={`text-sm ${msg.ok ? "text-success" : "text-danger"}`}>{msg.texto}</p>}
+      <button className="btn-primary w-full" disabled={pendente}>{pendente ? "Salvando…" : editando ? "Salvar alterações" : "Cadastrar cliente"}</button>
     </form>
   );
 }

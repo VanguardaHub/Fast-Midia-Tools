@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { alterarPerfilUsuario, criarConvite, reenviarConvite, type ResultadoEnvioConvite } from "@/lib/actions/cadastros";
+import { alterarPerfilUsuario, atualizarDadosPerfil, criarConvite, reenviarConvite, type ResultadoEnvioConvite } from "@/lib/actions/cadastros";
 
 type P = "fast" | "analista" | "supervisora" | "admin";
 
@@ -76,19 +76,40 @@ export function BotaoReenviar({ email }: { email: string }) {
   );
 }
 
-export function LinhaPerfil({ perfil, podeEditar }: { perfil: { id: string; nome: string; email: string; perfil: P; ativo: boolean }; podeEditar: boolean }) {
+export function LinhaPerfil({ perfil, podeEditar }: { perfil: { id: string; nome: string; email: string; telefone: string; perfil: P; ativo: boolean }; podeEditar: boolean }) {
   const router = useRouter();
   const [p, setP] = useState<P>(perfil.perfil);
   const [ativo, setAtivo] = useState(perfil.ativo);
+  const [editando, setEditando] = useState(false);
+  const [nome, setNome] = useState(perfil.nome);
+  const [telefone, setTelefone] = useState(perfil.telefone);
+  const [erro, setErro] = useState<string | null>(null);
   const [pendente, iniciar] = useTransition();
   function salvar(np: P, na: boolean) {
-    setP(np); setAtivo(na);
-    iniciar(async () => { await alterarPerfilUsuario(perfil.id, np, na); router.refresh(); });
+    setP(np); setAtivo(na); setErro(null);
+    iniciar(async () => {
+      const r = await alterarPerfilUsuario(perfil.id, np, na);
+      if (!r.ok) setErro(r.erro);
+      router.refresh();
+    });
+  }
+  function salvarDados() {
+    setErro(null);
+    iniciar(async () => {
+      const r = await atualizarDadosPerfil(perfil.id, { nome, telefone });
+      if (!r.ok) { setErro(r.erro); return; }
+      setEditando(false);
+      router.refresh();
+    });
   }
   return (
     <tr className="border-b border-border last:border-0">
-      <td className="p-2">{perfil.nome}</td>
+      <td className="p-2">
+        {editando ? <input className="input min-h-9 text-xs" value={nome} onChange={(e) => setNome(e.target.value)} /> : perfil.nome}
+        {erro && <p className="text-xs text-danger">{erro}</p>}
+      </td>
       <td className="p-2">{perfil.email}</td>
+      <td className="p-2">{editando ? <input className="input min-h-9 w-36 text-xs" value={telefone} onChange={(e) => setTelefone(e.target.value)} placeholder="5592999999999" /> : perfil.telefone || "—"}</td>
       <td className="p-2">
         {podeEditar ? (
           <select className="input min-h-9 text-xs" value={p} disabled={pendente} onChange={(e) => salvar(e.target.value as P, ativo)}>
@@ -97,6 +118,16 @@ export function LinhaPerfil({ perfil, podeEditar }: { perfil: { id: string; nome
         ) : p}
       </td>
       <td className="p-2">{podeEditar ? <input type="checkbox" className="size-5" checked={ativo} disabled={pendente} onChange={(e) => salvar(p, e.target.checked)} /> : ativo ? "sim" : "não"}</td>
+      <td className="p-2 text-right">
+        {podeEditar && (editando ? (
+          <span className="flex justify-end gap-1">
+            <button type="button" className="btn-outline min-h-8 px-2 text-xs" disabled={pendente} onClick={() => { setEditando(false); setNome(perfil.nome); setTelefone(perfil.telefone); }}>Cancelar</button>
+            <button type="button" className="btn-primary min-h-8 px-2 text-xs" disabled={pendente} onClick={salvarDados}>{pendente ? "Salvando…" : "Salvar"}</button>
+          </span>
+        ) : (
+          <button type="button" className="btn-outline min-h-8 px-2 text-xs" onClick={() => setEditando(true)}>Editar</button>
+        ))}
+      </td>
     </tr>
   );
 }

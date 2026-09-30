@@ -8,7 +8,7 @@ Legenda de situação: ✅ implementado · 🟡 parcial / depende de credencial 
 |---|---|---|---|---|
 | RF-01 | Login corporativo e sessão com expiração | M | Supabase Auth (magic link, senha, Google OAuth preparado); trigger `tg_auth_usuario_validar` (domínio/convite); `proxy.ts` | ✅ (Google OAuth aguarda decisão 3) |
 | RF-02 | Perfis Fast/Analista/Supervisora/Admin com RLS | M | `perfil`, políticas em 0004/0006, `auth_perfil()` | ✅ |
-| RF-03 | Cadastro de Fasts por interface | M | `/cadastros/fasts`, tabela `fast` | ✅ |
+| RF-03 | Cadastro de Fasts por interface | M | `/cadastros/fasts` (criar, editar, vincular conta, desativar, excluir sem jobs), `/cadastros/clientes`, `/cadastros/acessos` (nome, telefone, perfil, status) | ✅ |
 | RF-10 | Grade semanal por Fast e slot, lida do Calendar | M | `/agenda` (ocupação do banco) + bloqueios via Apps Script (`APPS_SCRIPT_URL`) | 🟡 Calendar depende do endpoint da Fase 0 |
 | RF-11 | Criar job com cliente, Fast, data, slot, analista, prazo, bloco de edição | M | `/agenda` → `criarJob` | ✅ |
 | RF-12 | Bloquear < 2h de folga e sinalizar à supervisora | M | `tg_job_validar` (P0003), `detectarConflitos()` no cliente, exceção registrada | ✅ |

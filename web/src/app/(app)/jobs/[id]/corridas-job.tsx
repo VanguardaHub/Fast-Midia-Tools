@@ -10,7 +10,7 @@ import type { Database } from "@/lib/database.types";
 type Corrida = Database["public"]["Tables"]["corrida_99"]["Row"];
 
 /** RF-41 / RF-43 / RF-44 — conciliação das corridas pela supervisora. */
-export function CorridasJob({ jobId, corridas, ehGestao }: { jobId: string; corridas: Corrida[]; ehGestao: boolean }) {
+export function CorridasJob({ corridas, ehGestao }: { jobId: string; corridas: Corrida[]; ehGestao: boolean }) {
   const router = useRouter();
   const [urls, setUrls] = useState<Record<string, string>>({});
   const [erro, setErro] = useState<string | null>(null);

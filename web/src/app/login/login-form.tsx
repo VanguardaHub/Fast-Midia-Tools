@@ -9,7 +9,7 @@ type Modo = "magic" | "senha";
 
 export function LoginForm({ next, erroInicial }: { next: string; erroInicial?: string }) {
   const router = useRouter();
-  const [modo, setModo] = useState<Modo>("magic");
+  const [modo, setModo] = useState<Modo>("senha");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [msg, setMsg] = useState<string | null>(erroInicial ?? null);
@@ -66,9 +66,11 @@ export function LoginForm({ next, erroInicial }: { next: string; erroInicial?: s
       <button className="btn-primary w-full" disabled={pendente}>
         {pendente ? "Aguarde…" : modo === "magic" ? "Receber link por e-mail" : "Entrar"}
       </button>
-      <button type="button" className="btn-outline w-full" onClick={google}>
-        Entrar com Google Workspace
-      </button>
+      {process.env.NEXT_PUBLIC_AUTH_GOOGLE === "true" && (
+        <button type="button" className="btn-outline w-full" onClick={google}>
+          Entrar com Google Workspace
+        </button>
+      )}
       <button type="button" className="w-full text-center text-sm text-muted underline" onClick={() => setModo(modo === "magic" ? "senha" : "magic")}>
         {modo === "magic" ? "Entrar com senha" : "Entrar com link por e-mail"}
       </button>

@@ -1,6 +1,6 @@
 # Política de Uso de Aparelho Pessoal (BYOD) — Fast Mídia Tools 2.0
 
-**Versão:** 1.0 · **Data:** 30/09/2026 · **Elaboração:** gerência do projeto · **Decisão relacionada:** seção 14, decisão 4 do escopo (exercida pela gerência em 30/09/2026) · **Complementa:** RIPD v1.0 e Termo de Ciência 2.0.
+**Versão:** 1.0 · **Data:** 30/09/2026 · **Elaboração:** gerência do projeto · **Decisão relacionada:** seção 14, decisão 4 do escopo (exercida pela gerência em 30/09/2026: BYOD integral, sem aparelho corporativo) · **Complementa:** RIPD v1.0 e Termo de Ciência 2.0.
 
 ## 1. Objetivo
 Definir as condições para uso do celular pessoal do Fast no aplicativo de campo, equilibrando a necessidade operacional (check-in, posição durante a gravação, comprovantes) com a privacidade e os custos do colaborador.
@@ -14,8 +14,8 @@ Definir as condições para uso do celular pessoal do Fast no aplicativo de camp
 |---|---|
 | Informar previamente (termo 2.0) e manter este documento acessível | Manter o app instalado e atualizado durante o período de jobs |
 | Limitar a coleta ao descrito no RIPD e desligar o rastreio quando solicitado por decisão de gestão | Conceder as permissões de localização ("enquanto usa o app", precisão alta) e câmera |
-| Custear ou ressarcir o consumo de dados móveis atribuível ao app quando houver política de ressarcimento [VALIDAR valor/critério] | Comunicar perda, roubo ou troca do aparelho para revogação da sessão |
-| Prover alternativa (aparelho corporativo) quando o Fast não puder ou não quiser usar o pessoal [VALIDAR disponibilidade] | Não compartilhar a conta; usar bloqueio de tela |
+| Manter o consumo de dados e bateria no mínimo necessário (envio a cada 30 s só na gravação, sem mídia além dos comprovantes) e medir o consumo real no piloto; ressarcimento não previsto no piloto, a reavaliar com os dados medidos | Comunicar perda, roubo ou troca do aparelho para revogação da sessão |
+| Ajustar a escala, sem penalidade, quando o Fast não puder usar o aparelho pessoal (não há aparelho corporativo disponível) | Não compartilhar a conta; usar bloqueio de tela |
 
 ## 4. Consumo estimado
 Posições a cada 30 s durante uma gravação de 4 h geram cerca de 480 requisições pequenas (menos de 1 MB de dados móveis). O GPS em primeiro plano consome bateria de forma perceptível; recomenda-se carregador no deslocamento. Esses valores serão medidos no piloto e revisados aqui.
@@ -25,7 +25,7 @@ Posições a cada 30 s durante uma gravação de 4 h geram cerca de 480 requisi�
 - Em caso de perda do aparelho: a supervisora desativa a conta imediatamente; nenhum dado de terceiros fica armazenado no app além dos check-ins pendentes de envio.
 
 ## 6. Direito de recusa
-O Fast pode pausar o compartilhamento de posição durante a gravação pelo botão do app. A recusa total ao uso do aparelho pessoal deve ser comunicada à supervisão, que providenciará aparelho corporativo ou ajuste de escala; não há penalidade pela recusa.
+O Fast pode pausar o compartilhamento de posição durante a gravação pelo botão do app. A recusa total ao uso do aparelho pessoal deve ser comunicada à supervisão, que fará ajuste de escala; não há aparelho corporativo e não há penalidade pela recusa. Os Fasts são prestadores PJ e esta política integra as condições do contrato de prestação de serviços.
 
 ## 7. Vigência e revisão
 Vigente durante o piloto (02/10 a 21/10/2026); revisão obrigatória ao final do piloto com os dados de consumo medidos, e sempre que o RIPD for revisado.

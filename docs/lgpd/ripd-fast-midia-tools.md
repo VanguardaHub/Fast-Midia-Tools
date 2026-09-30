@@ -3,14 +3,14 @@
 **Versão:** 1.0 · **Data:** 30/09/2026 · **Elaboração:** gerência do projeto (Jussara Cavalcante, Head de IA, Vanguarda Martech) · **Base normativa:** Lei 13.709/2018 (LGPD), arts. 5º, 6º, 7º, 9º, 10, 15, 16, 18, 37, 38, 41, 46 a 50; Guia Orientativo da ANPD para elaboração de RIPD.
 **Situação:** aprovado pela gerência do projeto para o piloto; a Vanguarda não possui encarregado (DPO) designado (ver seção 1.3).
 
-> Marcações **[VALIDAR]** indicam informações que a gerência confirma antes da assinatura: razão social/CNPJ, natureza do vínculo dos Fasts e canal de atendimento ao titular.
+> Definições confirmadas pela gerência em 30/09/2026: controladora "Vanguarda Martech"; Fasts com vínculo de pessoa jurídica (prestação de serviços); canal do titular na gerência do projeto; sem aparelho corporativo (BYOD integral). Pendente apenas o prazo contábil de guarda dos comprovantes, marcado **[VALIDAR contabilidade]**.
 
 ---
 
 ## 1. Identificação
 
 ### 1.1 Agente de tratamento
-- **Controladora:** Vanguarda Martech [VALIDAR razão social e CNPJ], Manaus/AM.
+- **Controladora:** Vanguarda Martech, Manaus/AM (CNPJ a inserir na versão assinada).
 - **Operadores (suboperadores de infraestrutura):** Supabase Inc. (banco de dados, autenticação e armazenamento; região São Paulo, `sa-east-1`); Vercel Inc. (hospedagem da aplicação; região São Paulo, `gru1`); Google LLC (Calendar, quando ativado; Geocoding, quando a chave existir); OpenStreetMap Foundation/Nominatim (geocodificação de endereços de clientes, sem dados pessoais); Resend (e-mail transacional, quando ativado); Meta Platforms (WhatsApp Cloud API, quando ativado); Notion Labs (espelho de status de jobs, quando ativado).
 
 ### 1.2 Projeto avaliado
@@ -43,7 +43,7 @@ Tratamento de **dados de geolocalização de colaboradores** (dado pessoal com p
 ## 3. Descrição do tratamento
 
 ### 3.1 Titulares
-- **Fasts** (equipe de campo): colaboradores CLT ou prestadores de serviço [VALIDAR vínculo]. Cerca de 2 a 10 pessoas.
+- **Fasts** (equipe de campo): **prestadores de serviço pessoa jurídica (PJ)**, pessoas naturais que atuam por meio de suas empresas; a LGPD os protege como titulares (art. 5º, V). Cerca de 2 a 10 pessoas. No piloto: Diana Savi (diana.savi@vanguardamartech.com.br).
 - **Supervisora, analistas e administradores:** usuários internos (identificação e ações no sistema).
 - **Contatos de clientes:** nome e WhatsApp do contato comercial (dados de contato profissional).
 
@@ -51,10 +51,10 @@ Tratamento de **dados de geolocalização de colaboradores** (dado pessoal com p
 
 | Categoria | Dados | Titular | Base legal (art. 7º) | Retenção | Onde |
 |---|---|---|---|---|---|
-| Identificação e acesso | nome, e-mail corporativo, telefone/WhatsApp, perfil de acesso | todos os usuários | V (execução de contrato) e IX (legítimo interesse: gestão de acessos) | enquanto houver vínculo + 5 anos (prazo prescricional trabalhista/cível) [VALIDAR] | `perfil`, `fast`, `convite`, `auth.users` |
+| Identificação e acesso | nome, e-mail corporativo, telefone/WhatsApp, perfil de acesso | todos os usuários | V (execução de contrato de prestação de serviços) e IX (legítimo interesse: gestão de acessos) | enquanto houver contrato + 5 anos (prazo prescricional cível, CC art. 206, § 5º) | `perfil`, `fast`, `convite`, `auth.users` |
 | Localização por evento | lat/lng, precisão, horário, distância à geofence, justificativa, em chegada/saída/corrida | Fasts | V (execução de contrato: comprovação da prestação) e IX (legítimo interesse: controle operacional e conciliação de despesas) | **90 dias** (`retencao_localizacao_dias`), expurgo diário automático | `evento_localizacao` |
 | Localização periódica na gravação | lat/lng, precisão, horário, a cada ~30 s entre check-in e check-out | Fasts | IX (legítimo interesse: coordenação em tempo real da produção), com salvaguardas da seção 5 | **7 dias** (`retencao_rastreio_dias`), expurgo diário | `evento_localizacao` tipo `posicao` |
-| Comprovantes de 99 | imagem/PDF do recibo (pode conter nome do passageiro, trajeto, valor, placa/nome do motorista), valor, origem/destino | Fasts (e terceiros incidentalmente: motorista) | V (reembolso/conciliação) e II (obrigação legal: guarda de documentos fiscais/contábeis) | 5 anos [VALIDAR com contabilidade] | bucket privado `comprovantes-99`, `corrida_99` |
+| Comprovantes de 99 | imagem/PDF do recibo (pode conter nome do passageiro, trajeto, valor, placa/nome do motorista), valor, origem/destino | Fasts (e terceiros incidentalmente: motorista) | V (reembolso/conciliação contratual) e II (obrigação legal: guarda de documentos fiscais/contábeis) | 5 anos [VALIDAR contabilidade] | bucket privado `comprovantes-99`, `corrida_99` |
 | Consentimento e ciência | versão do termo, data/hora, user agent | Fasts | II/IX (comprovação de transparência) | enquanto houver vínculo + 5 anos | `consentimento`, `termo_ciencia` |
 | Auditoria | quem alterou o quê, quem consultou posição de quem, quando | usuários internos | IX (segurança e responsabilização) | 5 anos | `auditoria` |
 | Contato de cliente | nome e WhatsApp do contato | contato do cliente | IX (relação comercial) | enquanto ativo | `cliente` |
@@ -62,14 +62,14 @@ Tratamento de **dados de geolocalização de colaboradores** (dado pessoal com p
 **Não há** tratamento de dados sensíveis (art. 5º, II), de crianças/adolescentes, nem decisões automatizadas com efeito jurídico (art. 20). A geometria bruta nunca entra nas views analíticas nem na trilha de auditoria.
 
 ### 3.3 Base legal: por que não "consentimento"
-Na relação de trabalho/prestação, o consentimento não é livre o bastante para sustentar o tratamento (assimetria). Por isso a base é **execução de contrato** (comprovação da prestação e reembolso) e **legítimo interesse** (art. 7º, IX, e art. 10), com **teste de balanceamento** na seção 4. O **termo de ciência 2.0** cumpre o dever de **transparência** (art. 9º) e registra a ciência do titular; o "aceite" no app não é a base legal, é evidência de informação prévia. O botão Pausar é uma salvaguarda de proporcionalidade, não uma revogação de consentimento.
+Os Fasts são prestadores PJ, mas pessoas naturais na relação de dependência econômica típica dessa contratação; o consentimento não é livre o bastante para sustentar o tratamento (assimetria). Por isso a base é **execução do contrato de prestação de serviços** (art. 7º, V: comprovação da presença contratada e reembolso de despesas) e **legítimo interesse** (art. 7º, IX, e art. 10: coordenação da produção), com **teste de balanceamento** na seção 4. A cláusula de tratamento de dados no contrato de prestação (ação A5) formaliza essa base. O **termo de ciência 2.0** cumpre o dever de **transparência** (art. 9º) e registra a ciência do titular; o "aceite" no app não é a base legal, é evidência de informação prévia. O botão Pausar é uma salvaguarda de proporcionalidade, não uma revogação de consentimento.
 
 ### 3.4 Fluxo do dado de localização
 1. O Fast toca em "Cheguei" (ou, entre chegada e saída, o app lê o GPS a cada ~30 s com a tela do job aberta).
 2. O aparelho envia ao servidor (TLS) apenas lat/lng, precisão e horário; o banco valida janela, consentimento, geofence e frequência e grava o evento imutável.
 3. Supervisora/Admin consultam apenas por funções auditadas (mapa do dia, histórico do job); cada consulta gera registro visível ao Fast.
 4. Expurgo automático diário (7 dias para posições; 90 para eventos) com registro na auditoria.
-5. Nenhum compartilhamento com terceiros além dos operadores de infraestrutura; nenhuma transferência internacional fora do que os operadores realizam sob suas cláusulas-padrão (Supabase/Vercel operam em São Paulo; Google, Meta, Resend e Notion podem processar fora do Brasil, art. 33) [VALIDAR aceite].
+5. Nenhum compartilhamento com terceiros além dos operadores de infraestrutura; nenhuma transferência internacional fora do que os operadores realizam sob suas cláusulas-padrão (Supabase/Vercel operam em São Paulo; Google, Meta, Resend e Notion podem processar fora do Brasil, art. 33; aceito pela gerência, com dados mínimos nas mensagens e sem coordenadas).
 
 ---
 
@@ -92,7 +92,7 @@ Na relação de trabalho/prestação, o consentimento não é livre o bastante p
 | Minimização por regra de banco | Trigger recusa posição fora da janela, sem consentimento do termo vigente, fora do intervalo chegada→saída; limita a 1 posição/30 s; descarta leituras com precisão > 150 m no aparelho |
 | Segregação de acesso | RLS em 100% das tabelas; Fast lê só os próprios eventos; gestão só via RPC `security definer` que registra auditoria |
 | Transparência ativa | Termo 2.0 com aceite versionado; indicador "posição compartilhada" e botão Pausar; "Quem consultou minha posição" em Minha conta |
-| Retenção e descarte | `pg_cron` diário: 7 dias (posição) e 90 dias (eventos); comprovantes conforme prazo contábil [VALIDAR] |
+| Retenção e descarte | `pg_cron` diário: 7 dias (posição) e 90 dias (eventos); comprovantes conforme prazo contábil [VALIDAR contabilidade] |
 | Integridade | Eventos de localização imutáveis (trigger); auditoria de alterações em job, briefing, exceção, corrida e Fast |
 | Confidencialidade em trânsito e repouso | TLS; buckets privados com URL assinada de 10 min; chaves de serviço apenas no servidor (Vercel) |
 | Controle de mudança | Migrações versionadas; CI com varredura de segredos; ADRs |
@@ -114,7 +114,8 @@ Escala: probabilidade e impacto de 1 (baixo) a 3 (alto); nível = P × I.
 | R5 | Comprovante de 99 expõe dados de terceiro (motorista) | 2 | 1 | 2 | Bucket privado; acesso restrito ao job; orientação para recortar o print quando possível | 1 |
 | R6 | Titular sem canal efetivo para exercer direitos (sem DPO) | 2 | 2 | 4 | Gerência assume o canal no piloto; designar encarregado até 21/10 | 2 |
 | R7 | Transferência internacional por operadores de mensageria/calendário | 2 | 1 | 2 | Ativação só com credencial aprovada; cláusulas-padrão dos provedores; dados mínimos nas mensagens (sem coordenadas) | 1 |
-| R8 | Retenção acima do necessário para comprovantes | 1 | 1 | 1 | Prazo definido com a contabilidade [VALIDAR] | 1 |
+| R8 | Retenção acima do necessário para comprovantes | 1 | 1 | 1 | Prazo a definir com a contabilidade [VALIDAR contabilidade] | 1 |
+| R9 | Fast sem aparelho compatível ou sem dados móveis (não há aparelho corporativo) | 2 | 1 | 2 | Política BYOD: ajuste de escala sem penalidade; consumo medido no piloto; fila offline para check-in/out | 1 |
 
 Nenhum risco residual acima de 2. **Parecer:** tratamento proporcional e adequado, autorizado para o piloto.
 
@@ -122,7 +123,7 @@ Nenhum risco residual acima de 2. **Parecer:** tratamento proporcional e adequad
 
 ## 7. Direitos do titular e resposta a incidentes
 
-**Canal do titular (art. 18):** e-mail da gerência do projeto [VALIDAR endereço] e, dentro do app, Minha conta. Prazo de resposta: 15 dias.
+**Canal do titular (art. 18):** e-mail da gerência do projeto (jussara.cavalcante@vanguardamartech.com.br) e, dentro do app, Minha conta. Prazo de resposta: 15 dias. Titular do piloto: Diana Savi (diana.savi@vanguardamartech.com.br), comunicada na sessão de onboarding.
 Direitos atendidos: confirmação e acesso (histórico e consultas em Minha conta); correção (via supervisão, com trilha); anonimização/eliminação (expurgo automático; pedido antecipado avaliado caso a caso quando não houver obrigação de guarda); informação sobre compartilhamento (seção 3.4); revogação de ciência (o Fast pode pausar o compartilhamento; a recusa definitiva do tratamento de presença é tratada como questão contratual, não de consentimento).
 
 **Incidentes (art. 48):** ao identificar acesso indevido, vazamento ou perda: (1) isolar (revogar chaves/sessões, desligar rastreio); (2) registrar em auditoria e no diário do piloto; (3) avaliar risco ao titular; (4) comunicar aos titulares afetados e à ANPD em até 3 dias úteis quando houver risco relevante (Resolução CD/ANPD nº 15/2024); (5) revisar este RIPD.
@@ -151,8 +152,8 @@ Direitos atendidos: confirmação e acesso (histórico e consultas em Minha cont
 
 | # | Ação | Responsável | Prazo |
 |---|---|---|---|
-| A1 | Confirmar os itens [VALIDAR] (razão social/CNPJ, vínculo dos Fasts, canal do titular, prazo contábil dos comprovantes) | Gerência | 02/10 |
+| A1 | Confirmar o prazo contábil de guarda dos comprovantes e inserir o CNPJ na versão assinada (demais itens confirmados em 30/09) | Gerência / Contabilidade | 02/10 |
 | A2 | Publicar o termo 2.0 como anexo deste RIPD e comunicar os Fasts antes do primeiro job real | Gerência / Supervisora | 02/10 |
 | A3 | Designar encarregado (art. 41) e registrar contato | Diretoria (informada) / Gerência | 21/10 |
 | A4 | Revisar prazos de retenção após o piloto (decisão 7 da seção 14) | Gerência | 21/10 |
-| A5 | Incluir cláusula de tratamento de dados no contrato/termo de prestação dos Fasts, referenciando este RIPD | Jurídico externo [VALIDAR] | onda 2 |
+| A5 | Incluir cláusula de tratamento de dados no contrato de prestação de serviços (PJ) dos Fasts, referenciando este RIPD e a política BYOD | Gerência (com apoio jurídico externo, se houver) | onda 2 |

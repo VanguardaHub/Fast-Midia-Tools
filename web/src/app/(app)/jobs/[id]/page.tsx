@@ -15,7 +15,7 @@ export default async function JobPage(props: PageProps<"/jobs/[id]">) {
   const s = await obterSessao();
   const supabase = await criarClienteServidor();
   const [{ data: job }, { data: coords }, { data: fasts }, { data: excecoes }, { data: corridas }, { data: alertas }] = await Promise.all([
-    supabase.from("job").select("*, cliente:cliente_id(id, nome, pasta_drive_url, grupo), fast:fast_id(id, nome, cor, email_calendario), briefing(*), analista:analista_id(nome, email)").eq("id", id).maybeSingle(),
+    supabase.from("job").select("*, cliente:cliente_id(id, nome, pasta_drive_url, pasta_drive_id, grupo, contato_nome, contato_whatsapp, ativo), fast:fast_id(id, nome, cor, email_calendario, telefone, perfil_id, ativo), briefing(*), analista:analista_id(nome, email)").eq("id", id).maybeSingle(),
     supabase.rpc("job_coordenadas", { p_job_id: id }),
     supabase.from("fast").select("id, nome, cor").eq("ativo", true).order("nome"),
     supabase.from("excecao").select("*, solicitante:solicitada_por(nome), decisor:decidida_por(nome)").eq("job_id", id).order("criado_em", { ascending: false }),
@@ -59,6 +59,28 @@ export default async function JobPage(props: PageProps<"/jobs/[id]">) {
           <Link className="btn-outline" href={`/campo/jobs/${job.id}`}>Visão do Fast</Link>
         </div>
       </header>
+
+      <section className="grid gap-3 sm:grid-cols-2">
+        <div className="card text-sm">
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold">Cliente</h2>
+            <Link href="/cadastros/clientes" className="text-xs text-primary underline">editar cadastro</Link>
+          </div>
+          <p className="mt-1 font-medium">{job.cliente?.nome}{job.cliente?.grupo ? <span className="text-muted"> · grupo {job.cliente.grupo}</span> : null}</p>
+          <p className="text-muted">Contato: {job.cliente?.contato_nome ?? "—"}{job.cliente?.contato_whatsapp ? ` · ${job.cliente.contato_whatsapp}` : ""}</p>
+          <p className="text-muted">Pasta no Drive: {job.cliente?.pasta_drive_url ? <a className="text-primary underline" href={job.cliente.pasta_drive_url} target="_blank" rel="noreferrer">abrir</a> : job.cliente?.pasta_drive_id ? "ID cadastrado" : <span className="text-warning">não cadastrada</span>}</p>
+          {job.cliente && !job.cliente.ativo && <p className="text-warning">Cliente inativo no cadastro.</p>}
+        </div>
+        <div className="card text-sm">
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold">Fast responsável</h2>
+            <Link href="/cadastros/fasts" className="text-xs text-primary underline">editar cadastro</Link>
+          </div>
+          <p className="mt-1 font-medium"><span className="mr-1 inline-block size-2.5 rounded-full" style={{ background: job.fast?.cor }} />{job.fast?.nome}</p>
+          <p className="text-muted">Calendar/login: {job.fast?.email_calendario}</p>
+          <p className="text-muted">WhatsApp: {job.fast?.telefone ?? "—"} · Conta no app: {job.fast?.perfil_id ? <span className="text-success">vinculada</span> : <span className="text-warning">sem login (não consegue fazer check-in)</span>}</p>
+        </div>
+      </section>
 
       <div className="grid gap-5 lg:grid-cols-2">
         <BriefingForm jobId={job.id} briefing={job.briefing} podeEditar={s.ehGestao || s.perfil.perfil === "analista"} />

@@ -20,10 +20,10 @@ export default async function AcessosPage() {
       <p className="text-sm text-muted">Convites geram um link de uso único e, com o Resend configurado, enviam e-mail automaticamente. Domínios com login automático: {Array.isArray(cfg?.valor) ? (cfg.valor as string[]).join(", ") : "—"}. Outros e-mails precisam de convite ou de cadastro como Fast.</p>
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="overflow-x-auto rounded-2xl border border-border bg-card lg:col-span-2">
-          <table className="w-full min-w-[560px] text-sm">
-            <thead><tr className="border-b border-border text-left"><th className="p-2">Nome</th><th className="p-2">E-mail</th><th className="p-2">Perfil</th><th className="p-2">Ativo</th></tr></thead>
+          <table className="w-full min-w-[760px] text-sm">
+            <thead><tr className="border-b border-border text-left"><th className="p-2">Nome</th><th className="p-2">E-mail</th><th className="p-2">Telefone</th><th className="p-2">Perfil</th><th className="p-2">Ativo</th><th className="p-2 text-right">Ações</th></tr></thead>
             <tbody>
-              {(perfis ?? []).map((p) => <LinhaPerfil key={p.id} perfil={{ id: p.id, nome: p.nome, email: p.email, perfil: p.perfil, ativo: p.ativo }} podeEditar={s.ehAdmin} />)}
+              {(perfis ?? []).map((p) => <LinhaPerfil key={p.id} perfil={{ id: p.id, nome: p.nome, email: p.email, telefone: p.telefone ?? "", perfil: p.perfil, ativo: p.ativo }} podeEditar={s.ehAdmin} />)}
             </tbody>
           </table>
         </div>

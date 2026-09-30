@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { criarClienteServidor } from "@/lib/supabase/server";
-import { exigirGestao } from "@/lib/sessao";
+import { exigirGestao, obterSessao } from "@/lib/sessao";
 import { traduzirErro } from "@/lib/regras";
 import { gerarEEnviarConvite, type ResultadoConvite } from "@/lib/integracoes/convites";
 
@@ -17,9 +17,11 @@ const FastSchema = z.object({
   cor: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
   nomeNotion: z.string().trim().optional(),
   ativo: z.boolean().default(true),
+  /** conta de login vinculada (perfil); undefined = não alterar, null = desvincular */
+  perfilId: z.string().uuid().nullable().optional(),
 });
 
-/** RF-03 — cadastro de Fasts por interface. */
+/** RF-03 — cadastro de Fasts por interface (criar e editar, inclusive vínculo com a conta de login). */
 export async function salvarFast(entrada: z.infer<typeof FastSchema>): Promise<Resultado> {
   await exigirGestao();
   const parse = FastSchema.safeParse(entrada);
@@ -33,13 +35,56 @@ export async function salvarFast(entrada: z.infer<typeof FastSchema>): Promise<R
     cor: d.cor,
     nome_notion: d.nomeNotion || null,
     ativo: d.ativo,
+    ...(d.perfilId !== undefined ? { perfil_id: d.perfilId } : {}),
   };
   const { error } = d.id
     ? await supabase.from("fast").update(linha).eq("id", d.id)
     : await supabase.from("fast").insert(linha);
-  if (error) return { ok: false, erro: traduzirErro(error.message) };
+  if (error) return { ok: false, erro: /fast_perfil_id_key/.test(error.message) ? "Esta conta de login já está vinculada a outro Fast." : /fast_nome_key|fast_email_calendario_key/.test(error.message) ? "Já existe um Fast com este nome ou e-mail." : traduzirErro(error.message) };
   revalidatePath("/cadastros/fasts");
   revalidatePath("/agenda");
+  return { ok: true };
+}
+
+type TabelaCadastro = "fast" | "cliente";
+
+/** Ativa/desativa um Fast ou cliente sem abrir o formulário (soft delete; histórico preservado). */
+export async function alternarAtivoCadastro(tabela: TabelaCadastro, id: string, ativo: boolean): Promise<Resultado> {
+  await exigirGestao();
+  const supabase = await criarClienteServidor();
+  const { error } = await supabase.from(tabela).update({ ativo }).eq("id", id);
+  if (error) return { ok: false, erro: traduzirErro(error.message) };
+  revalidatePath(`/cadastros/${tabela}s`);
+  revalidatePath("/agenda");
+  return { ok: true };
+}
+
+/** Exclui definitivamente um Fast ou cliente sem jobs (apenas Admin; com jobs, use "Desativar"). */
+export async function excluirCadastro(tabela: TabelaCadastro, id: string): Promise<Resultado> {
+  const s = await exigirGestao();
+  if (!s.ehAdmin) return { ok: false, erro: "Apenas Admin exclui cadastros. Use “Desativar”." };
+  const supabase = await criarClienteServidor();
+  const { count } = await supabase.from("job").select("id", { count: "exact", head: true }).eq(tabela === "fast" ? "fast_id" : "cliente_id", id);
+  if ((count ?? 0) > 0) return { ok: false, erro: `Há ${count} job(s) vinculado(s). Desative em vez de excluir, para preservar o histórico.` };
+  const { error } = await supabase.from(tabela).delete().eq("id", id);
+  if (error) return { ok: false, erro: traduzirErro(error.message) };
+  revalidatePath(`/cadastros/${tabela}s`);
+  revalidatePath("/agenda");
+  return { ok: true };
+}
+
+const DadosPerfilSchema = z.object({ nome: z.string().trim().min(2), telefone: z.string().trim().optional() });
+
+/** Admin edita nome e telefone de um usuário (e-mail é o identificador de login e não muda por aqui). */
+export async function atualizarDadosPerfil(usuarioId: string, entrada: z.infer<typeof DadosPerfilSchema>): Promise<Resultado> {
+  const s = await exigirGestao();
+  if (!s.ehAdmin && s.usuarioId !== usuarioId) return { ok: false, erro: "Apenas Admin edita dados de outros usuários." };
+  const parse = DadosPerfilSchema.safeParse(entrada);
+  if (!parse.success) return { ok: false, erro: parse.error.issues.map((i) => i.message).join("; ") };
+  const supabase = await criarClienteServidor();
+  const { error } = await supabase.from("perfil").update({ nome: parse.data.nome, telefone: parse.data.telefone?.replace(/\D/g, "") || null }).eq("id", usuarioId);
+  if (error) return { ok: false, erro: traduzirErro(error.message) };
+  revalidatePath("/cadastros/acessos");
   return { ok: true };
 }
 
@@ -56,6 +101,7 @@ const ClienteSchema = z.object({
 
 /** RF-16 — clientes e pasta do Drive (CRIAÇÃO/[ANO]/[CLIENTE]). */
 export async function salvarCliente(entrada: z.infer<typeof ClienteSchema>): Promise<Resultado> {
+  await obterSessao();
   const parse = ClienteSchema.safeParse(entrada);
   if (!parse.success) return { ok: false, erro: parse.error.issues.map((i) => i.message).join("; ") };
   const d = parse.data;
@@ -72,7 +118,7 @@ export async function salvarCliente(entrada: z.infer<typeof ClienteSchema>): Pro
   const { error } = d.id
     ? await supabase.from("cliente").update(linha).eq("id", d.id)
     : await supabase.from("cliente").insert(linha);
-  if (error) return { ok: false, erro: traduzirErro(error.message) };
+  if (error) return { ok: false, erro: /cliente_nome_key/.test(error.message) ? "Já existe um cliente com este nome." : traduzirErro(error.message) };
   revalidatePath("/cadastros/clientes");
   revalidatePath("/agenda");
   return { ok: true };
@@ -118,6 +164,8 @@ export async function reenviarConvite(email: string): Promise<ResultadoEnvioConv
 }
 
 export async function alterarPerfilUsuario(usuarioId: string, perfil: "fast" | "analista" | "supervisora" | "admin", ativo: boolean): Promise<Resultado> {
+  const s = await exigirGestao();
+  if (!s.ehAdmin) return { ok: false, erro: "Apenas Admin altera perfil e status de acesso." };
   const supabase = await criarClienteServidor();
   const { error } = await supabase.from("perfil").update({ perfil, ativo }).eq("id", usuarioId);
   if (error) return { ok: false, erro: traduzirErro(error.message) };

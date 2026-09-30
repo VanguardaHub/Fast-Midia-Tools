@@ -5,6 +5,7 @@ import { criarClienteServidor } from "@/lib/supabase/server";
 import { obterSessao } from "@/lib/sessao";
 import { hojeISO } from "@/lib/formato";
 import { GradeAgenda } from "./grade-agenda";
+import { AoVivo } from "@/components/ao-vivo";
 
 export const metadata = { title: "Agenda" };
 
@@ -36,7 +37,7 @@ export default async function AgendaPage(props: PageProps<"/agenda">) {
     <div className="space-y-4">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Agenda</h1>
+          <h1 className="text-2xl font-bold">Agenda <AoVivo tabelas={["job", "briefing"]} canal="agenda" compacto /></h1>
           <p className="text-sm text-muted">
             Semana de {format(segunda, "dd/MM", { locale: ptBR })} a {format(addDays(segunda, 5), "dd/MM/yyyy", { locale: ptBR })}
           </p>

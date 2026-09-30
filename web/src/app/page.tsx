@@ -4,6 +4,6 @@ import { obterSessao } from "@/lib/sessao";
 export default async function Home() {
   const s = await obterSessao();
   if (s.ehGestao) redirect("/painel");
-  if (s.perfil.perfil === "analista") redirect("/agenda");
+  if (s.perfil.perfil === "analista") redirect("/meus-jobs");
   redirect("/campo");
 }

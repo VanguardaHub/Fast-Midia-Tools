@@ -6,6 +6,7 @@ import { criarClienteBrowser } from "@/lib/supabase/client";
 import { salvarCorrida } from "@/lib/actions/campo";
 import { fmtMoeda } from "@/lib/formato";
 import { SeletorArquivo } from "@/components/seletor-arquivo";
+import { PreviewComprovante } from "@/components/preview-comprovante";
 import type { Database } from "@/lib/database.types";
 
 type Corrida = Database["public"]["Tables"]["corrida_99"]["Row"];
@@ -72,6 +73,7 @@ function FormCorrida({ jobId, sentido, corrida }: { jobId: string; sentido: "ida
         )}
       </div>
       {corrida?.valor != null && <p className="text-sm text-muted">Valor registrado: {fmtMoeda(corrida.valor)}{corrida.destino ? ` · destino: ${corrida.destino}` : ""}</p>}
+      {corrida?.comprovante_path && <PreviewComprovante path={corrida.comprovante_path} rotulo={`Comprovante da ${sentido}`} altura="200px" />}
       {!bloqueado && (
         <>
           <div className="grid grid-cols-2 gap-2">

@@ -5,8 +5,15 @@ import { useRouter } from "next/navigation";
 import { criarClienteBrowser } from "@/lib/supabase/client";
 import { traduzirErro } from "@/lib/regras";
 
-type Modo = "magic" | "senha";
+type Modo = "senha" | "magic";
+const MAGIC_LINK = process.env.NEXT_PUBLIC_AUTH_MAGIC_LINK === "true"; // exige SMTP configurado no Supabase Auth
+const GOOGLE = process.env.NEXT_PUBLIC_AUTH_GOOGLE === "true";
 
+/**
+ * RF-01 — login corporativo pelo Supabase Auth.
+ * Padrão: e-mail e senha. O primeiro acesso vem pelo link de convite (Cadastros → Acessos);
+ * a senha é definida em Minha conta. Sem senha, o usuário pede um novo link à supervisão.
+ */
 export function LoginForm({ next, erroInicial }: { next: string; erroInicial?: string }) {
   const router = useRouter();
   const [modo, setModo] = useState<Modo>("senha");
@@ -28,11 +35,11 @@ export function LoginForm({ next, erroInicial }: { next: string; erroInicial?: s
           options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` },
         });
         if (error) setMsg(traduzirErro(error.message));
-        else setOk("Link de acesso enviado. Verifique seu e-mail corporativo.");
+        else setOk("Link de acesso enviado. Verifique seu e-mail.");
         return;
       }
       const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
-      if (error) setMsg(traduzirErro(error.message));
+      if (error) setMsg(error.message.includes("Invalid login credentials") ? "E-mail ou senha incorretos." : traduzirErro(error.message));
       else {
         router.replace(next);
         router.refresh();
@@ -46,7 +53,7 @@ export function LoginForm({ next, erroInicial }: { next: string; erroInicial?: s
       provider: "google",
       options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` },
     });
-    if (error) setMsg("Login Google ainda não configurado (decisão 3 da seção 14 do escopo).");
+    if (error) setMsg("Login Google indisponível no momento. Use e-mail e senha.");
   }
 
   return (
@@ -66,14 +73,19 @@ export function LoginForm({ next, erroInicial }: { next: string; erroInicial?: s
       <button className="btn-primary w-full" disabled={pendente}>
         {pendente ? "Aguarde…" : modo === "magic" ? "Receber link por e-mail" : "Entrar"}
       </button>
-      {process.env.NEXT_PUBLIC_AUTH_GOOGLE === "true" && (
+      {GOOGLE && (
         <button type="button" className="btn-outline w-full" onClick={google}>
           Entrar com Google Workspace
         </button>
       )}
-      <button type="button" className="w-full text-center text-sm text-muted underline" onClick={() => setModo(modo === "magic" ? "senha" : "magic")}>
-        {modo === "magic" ? "Entrar com senha" : "Entrar com link por e-mail"}
-      </button>
+      {MAGIC_LINK && (
+        <button type="button" className="w-full text-center text-sm text-muted underline" onClick={() => setModo(modo === "magic" ? "senha" : "magic")}>
+          {modo === "magic" ? "Entrar com senha" : "Entrar com link por e-mail"}
+        </button>
+      )}
+      <p className="text-center text-xs text-muted">
+        Primeiro acesso ou esqueceu a senha? Peça à supervisão um link de acesso em Cadastros → Acessos e depois defina sua senha em Minha conta.
+      </p>
     </form>
   );
 }

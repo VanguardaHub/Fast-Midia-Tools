@@ -11,9 +11,10 @@ export default async function ContaPage() {
   const supabase = await criarClienteServidor();
   const [{ data: consentimentos }, { data: consultas }] = await Promise.all([
     supabase.from("consentimento").select("versao_termo, aceito_em").eq("usuario_id", s.usuarioId).order("aceito_em", { ascending: false }),
+    // QA P1 #2 — RPC security definer: a RLS de auditoria só libera as linhas do próprio usuário, e as consultas são da gestão
     s.fastId
-      ? supabase.from("auditoria").select("criado_em, usuario_email, entidade").eq("acao", "consulta_posicao").order("criado_em", { ascending: false }).limit(20)
-      : Promise.resolve({ data: [] as { criado_em: string; usuario_email: string | null; entidade: string }[] }),
+      ? supabase.rpc("minhas_consultas_posicao", { p_limite: 30 })
+      : Promise.resolve({ data: [] as { criado_em: string; usuario_email: string | null; entidade: string; referencia: string | null }[] }),
   ]);
 
   return (
@@ -44,7 +45,7 @@ export default async function ContaPage() {
               {consultas.map((c, i) => (
                 <li key={i} className="flex justify-between py-1.5">
                   <span>{c.usuario_email ?? "sistema"}</span>
-                  <span className="text-muted">{c.entidade} · {fmtDataHora(c.criado_em)}</span>
+                  <span className="text-muted">{c.entidade === "job" ? `job ${c.referencia ?? ""}` : c.referencia ?? c.entidade} · {fmtDataHora(c.criado_em)}</span>
                 </li>
               ))}
             </ul>

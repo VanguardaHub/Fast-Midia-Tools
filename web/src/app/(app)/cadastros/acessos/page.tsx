@@ -34,7 +34,12 @@ export default async function AcessosPage() {
             <ul className="space-y-1 text-sm">
               {(convites ?? []).map((c) => (
                 <li key={c.email} className="border-b border-border py-1.5 last:border-0">
-                  <span className="font-medium">{c.email}</span> · {c.perfil} · {c.usado_em ? `conta criada ${fmtDataHora(c.usado_em)}` : <span className="text-warning">link não gerado</span>}
+                  <span className="font-medium">{c.email}</span> · {c.perfil} ·{" "}
+                  {c.primeiro_acesso_em
+                    ? <span className="text-success">primeiro acesso em {fmtDataHora(c.primeiro_acesso_em)}</span>
+                    : c.usado_em
+                      ? <span className="text-warning">conta criada {fmtDataHora(c.usado_em)} · aguardando primeiro acesso</span>
+                      : <span className="text-warning">aguardando primeiro acesso</span>}
                   <div className="mt-1"><BotaoReenviar email={c.email} /></div>
                 </li>
               ))}

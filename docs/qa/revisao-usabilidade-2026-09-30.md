@@ -24,7 +24,9 @@ A plataforma está funcional de ponta a ponta para a gestão: nenhuma rota devol
 
 ## 3. Achados
 
-### P1 — corrigir antes do piloto
+> **Atualização 30/09/2026 (tarde):** os quatro P1 foram implementados (migração 0013 + páginas `not-found`/`error` + RPC `minhas_consultas_posicao` + `primeiro_acesso_em` no convite). O #5 (rótulo "sistema") foi incluído de passagem. Durante o #4 constatou-se que o convite da Diana estava com e-mail sem ".br", corrigido no banco.
+
+### P1 — corrigir antes do piloto (✅ implementados)
 
 | # | Tela | Achado | Evidência | Impacto | Correção proposta |
 |---|---|---|---|---|---|

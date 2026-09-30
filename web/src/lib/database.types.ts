@@ -94,9 +94,9 @@ export type Database = {
         ];
       };
       convite: {
-        Row: { criado_em: string; criado_por: string | null; email: string; nome: string | null; perfil: Database["public"]["Enums"]["perfil_tipo"]; usado_em: string | null };
-        Insert: { criado_em?: string; criado_por?: string | null; email: string; nome?: string | null; perfil?: Database["public"]["Enums"]["perfil_tipo"]; usado_em?: string | null };
-        Update: { criado_em?: string; criado_por?: string | null; email?: string; nome?: string | null; perfil?: Database["public"]["Enums"]["perfil_tipo"]; usado_em?: string | null };
+        Row: { criado_em: string; criado_por: string | null; email: string; nome: string | null; perfil: Database["public"]["Enums"]["perfil_tipo"]; usado_em: string | null; primeiro_acesso_em: string | null };
+        Insert: { criado_em?: string; criado_por?: string | null; email: string; nome?: string | null; perfil?: Database["public"]["Enums"]["perfil_tipo"]; usado_em?: string | null; primeiro_acesso_em?: string | null };
+        Update: { criado_em?: string; criado_por?: string | null; email?: string; nome?: string | null; perfil?: Database["public"]["Enums"]["perfil_tipo"]; usado_em?: string | null; primeiro_acesso_em?: string | null };
         Relationships: [
           { foreignKeyName: "convite_criado_por_fkey"; columns: ["criado_por"]; isOneToOne: false; referencedRelation: "perfil"; referencedColumns: ["id"] },
         ];
@@ -196,6 +196,8 @@ export type Database = {
         Returns: { capturado_em: string; cliente: string; codigo: number; cor: string; dentro_geofence: boolean; fast_id: string; fast_nome: string; job_id: string; job_lat: number; job_lng: number; lat: number; lng: number; precisao_m: number; raio_geofence_m: number; status: Database["public"]["Enums"]["job_status"]; tipo: Database["public"]["Enums"]["evento_localizacao_tipo"] }[];
       };
       marcar_material_entregue: { Args: { p_job_id: string }; Returns: undefined };
+      minhas_consultas_posicao: { Args: { p_limite?: number }; Returns: { criado_em: string; usuario_email: string | null; entidade: string; referencia: string | null }[] };
+      registrar_primeiro_acesso: { Args: Record<string, never>; Returns: undefined };
       pode_ver_job: { Args: { p_job_id: string }; Returns: boolean };
       registrar_evento_localizacao: {
         Args: { p_capturado_em?: string; p_chave?: string; p_job_id: string; p_justificativa?: string; p_lat: number; p_lng: number; p_offline?: boolean; p_precisao_m: number; p_tipo: Database["public"]["Enums"]["evento_localizacao_tipo"] };

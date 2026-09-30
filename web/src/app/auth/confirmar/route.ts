@@ -18,5 +18,7 @@ export async function GET(request: Request) {
   if (error) {
     return NextResponse.redirect(`${origin}/login?erro=${encodeURIComponent("Link expirado ou já utilizado. Peça um novo convite.")}`);
   }
+  // QA P1 #4 — marca o primeiro acesso do convite (função security definer; ignora falhas para não travar o login)
+  await supabase.rpc("registrar_primeiro_acesso").then(() => undefined, () => undefined);
   return NextResponse.redirect(`${origin}${destino}`);
 }

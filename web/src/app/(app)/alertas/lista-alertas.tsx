@@ -55,7 +55,7 @@ export function ListaAlertas({ alertas, modo = "abertos" }: { alertas: A[]; modo
               </p>
               <p className="text-muted">{a.mensagem} · {fmtDataHora(a.criadoEm)}</p>
               {modo === "resolvidos" && a.resolvidoEm && (
-                <p className="text-xs text-muted">Resolvido por {a.resolvidoPor ?? "—"} em {fmtDataHora(a.resolvidoEm)}</p>
+                <p className="text-xs text-muted">Resolvido por {a.resolvidoPor ?? "sistema (condição atendida)"} em {fmtDataHora(a.resolvidoEm)}</p>
               )}
             </div>
             <div className="flex gap-2">

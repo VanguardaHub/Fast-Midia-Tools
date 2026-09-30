@@ -5,6 +5,7 @@ import { z } from "zod";
 import { criarClienteServidor } from "@/lib/supabase/server";
 import { exigirGestao, obterSessao } from "@/lib/sessao";
 import { traduzirErro } from "@/lib/regras";
+import { geocodificarMelhor } from "@/lib/geocodificacao";
 import type { Database } from "@/lib/database.types";
 
 export type Resultado<T = undefined> = { ok: true; dados?: T } | { ok: false; erro: string };
@@ -86,8 +87,22 @@ export async function criarJob(entrada: NovoJob): Promise<Resultado<{ id: string
     .select("id")
     .single();
   if (error) return { ok: false, erro: traduzirErro(error.message) };
+  if (d.endereco) await definirPontoAutomatico(data.id, d.endereco);
   revalidarJobs(data.id);
   return { ok: true, dados: { id: data.id } };
+}
+
+/**
+ * RF-36 — ponto do job definido automaticamente a partir do endereço (não confirmado; a gestão confirma no mapa).
+ * Sem ponto, o Mapa do dia não tem o que mostrar e o check-in exige justificativa. Falhas são silenciosas.
+ */
+async function definirPontoAutomatico(jobId: string, endereco: string): Promise<void> {
+  const supabase = await criarClienteServidor();
+  const { data: coords } = await supabase.rpc("job_coordenadas", { p_job_id: jobId });
+  if (coords?.[0]?.lat != null) return; // já tem ponto (definido/confirmado manualmente)
+  const geo = await geocodificarMelhor(endereco);
+  if (!geo) return;
+  await supabase.rpc("definir_ponto_job", { p_job_id: jobId, p_lat: geo.lat, p_lng: geo.lng, p_confirmado: false });
 }
 
 const EdicaoJobSchema = z.object({
@@ -183,6 +198,7 @@ export async function salvarBriefing(jobId: string, entrada: z.infer<typeof Brie
     { onConflict: "job_id" },
   );
   if (error) return { ok: false, erro: traduzirErro(error.message) };
+  await definirPontoAutomatico(jobId, d.local);
   revalidarJobs(jobId);
   return { ok: true };
 }

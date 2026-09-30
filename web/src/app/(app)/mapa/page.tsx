@@ -58,7 +58,7 @@ export default async function MapaPage(props: PageProps<"/mapa">) {
             <p className="text-xs text-muted">
               {STATUS_ROTULO[l.status]} · {rotuloEvento(l)}{l.tipo && ` (${Math.round(l.precisao_m)} m)`}
               {l.dentro_geofence === false && <span className="text-danger"> · fora da geofence</span>}
-              {l.job_lat == null && <span className="text-warning"> · sem ponto do job</span>}
+              {l.job_lat == null && <span className="text-warning"> · sem ponto do job → abrir e definir a geofence</span>}
             </p>
           </Link>
         ))}

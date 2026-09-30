@@ -11,6 +11,7 @@ export function Shell({ sessao, children }: { sessao: Sessao; children: React.Re
         { href: "/mapa", rotulo: "Mapa" },
         { href: "/alertas", rotulo: "Alertas" },
         { href: "/indicadores", rotulo: "Indicadores" },
+        { href: "/cadastros", rotulo: "Cadastros" },
       ]
     : sessao.perfil.perfil === "analista"
       ? [

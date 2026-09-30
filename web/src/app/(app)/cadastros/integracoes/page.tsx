@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { exigirGestao } from "@/lib/sessao";
 import { fmtDataHora } from "@/lib/formato";
 import type { Database } from "@/lib/database.types";
+import { googleCalendarConfigurado } from "@/lib/integracoes/google-calendar";
 
 export const metadata = { title: "Integrações" };
 
@@ -9,7 +10,8 @@ export const metadata = { title: "Integrações" };
 export default async function IntegracoesPage() {
   await exigirGestao();
   const configuradas = {
-    "Apps Script (Calendar/Drive)": Boolean(process.env.APPS_SCRIPT_URL && process.env.APPS_SCRIPT_TOKEN),
+    [`Google Calendar (API${process.env.GOOGLE_CALENDAR_ID ? ", calendário compartilhado" : ", conta de serviço"})`]: googleCalendarConfigurado(),
+    "Apps Script (Drive; Calendar alternativo)": Boolean(process.env.APPS_SCRIPT_URL && process.env.APPS_SCRIPT_TOKEN),
     "Notion (espelho)": Boolean(process.env.NOTION_TOKEN && process.env.NOTION_DATABASE_ID),
     "WhatsApp Cloud API": Boolean(process.env.WHATSAPP_ACCESS_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID),
     "E-mail (Resend)": Boolean(process.env.RESEND_API_KEY),

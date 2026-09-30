@@ -40,7 +40,8 @@ Referência: seção 7 do Documento de Escopo (arquitetura alvo em 3 camadas; mi
 |---|---|---|
 | App de campo e painel | Next.js 16 (App Router, Server Actions, `proxy.ts`), React 19, TypeScript 5, Tailwind 4, MapLibre GL, PWA (manifest + service worker) | Uma base web instalável, alinhada à competência do time |
 | Backend e banco | Supabase: Postgres 17, PostGIS, Auth, RLS, Storage, pg_cron | Geofence, distância e permissão por linha prontas; região Brasil |
-| Integração Calendar/Drive | Apps Script como serviço interno (endpoint com token) | Reaproveita código e permissões atuais |
+| Integração Calendar | Google Calendar API v3 com conta de serviço (impersonação por delegação em todo o domínio ou calendário compartilhado) — ADR-0006 | Sem depender do Apps Script; idempotente por `fmt_chave`; bloqueios da agenda por função pura testada |
+| Integração Drive | Apps Script como serviço interno (endpoint com token) | Reaproveita código e permissões atuais |
 | Notion | Espelho de status e campos via fila | Mantém as views atuais da supervisora |
 | Notificações | WhatsApp Cloud API com e-mail de contingência | Sandbox não serve para produção; chip pendente |
 | Observabilidade | Logs do Vercel e do Supabase; advisors; auditoria no banco | Continuidade e auditoria |

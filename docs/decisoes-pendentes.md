@@ -18,6 +18,7 @@ Este registro mostra o que a plataforma já assume e o que continua aguardando a
 |---|---|---|
 | Chip dedicado do WhatsApp + token permanente | Breno / TI | Fila acumula `whatsapp_send` em erro; contingência por e-mail quando `RESEND_API_KEY` existir |
 | Token da integração Notion + ID da database | Admin do Notion | `notion_upsert` pendente; o app opera normalmente |
-| Endpoint do Apps Script com token (Fase 0, branch `claude/admiring-carson-mec94w`) | TI/Dev | Calendar/Drive não sincronizam; agenda usa ocupação do banco |
+| Conta de serviço do Google + delegação em todo o domínio (ou calendário compartilhado) — ADR-0006 | TI (Admin do Workspace) | Calendar não sincroniza; agenda usa só a ocupação do banco. Variáveis: `GOOGLE_SERVICE_ACCOUNT_JSON`, opcional `GOOGLE_CALENDAR_ID` |
+| Endpoint do Apps Script com token (Fase 0, branch `claude/admiring-carson-mec94w`) | TI/Dev | Só a verificação da pasta no Drive fica pendente (Calendar passou para a API oficial, ADR-0006) |
 | Credenciais OAuth do Google (Supabase Auth) | TI | Login por magic link/senha |
 | RIPD aprovado | DPO | Piloto com GPS não inicia (M3) |

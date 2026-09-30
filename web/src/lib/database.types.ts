@@ -205,7 +205,7 @@ export type Database = {
     };
     Enums: {
       alerta_tipo: "briefing_atrasado" | "checkin_atrasado" | "checkin_fora_geofence" | "checkin_baixa_precisao" | "material_nao_entregue_24h" | "comprovante_faltando" | "destino_divergente" | "excecao_pendente";
-      evento_localizacao_tipo: "chegada" | "saida" | "corrida";
+      evento_localizacao_tipo: "chegada" | "saida" | "corrida" | "posicao";
       excecao_tipo: "buffer_2h" | "agendamento_duplo" | "checkin_fora_geofence" | "checkin_baixa_precisao" | "sem_briefing" | "troca_fast" | "outro";
       integracao_status: "pendente" | "processando" | "ok" | "erro" | "descartado";
       integracao_tipo: "notion_upsert" | "calendar_upsert" | "calendar_delete" | "whatsapp_send" | "email_send" | "push_send" | "drive_verificar";
@@ -266,7 +266,7 @@ export const Constants = {
   public: {
     Enums: {
       alerta_tipo: ["briefing_atrasado", "checkin_atrasado", "checkin_fora_geofence", "checkin_baixa_precisao", "material_nao_entregue_24h", "comprovante_faltando", "destino_divergente", "excecao_pendente"],
-      evento_localizacao_tipo: ["chegada", "saida", "corrida"],
+      evento_localizacao_tipo: ["chegada", "saida", "corrida", "posicao"],
       excecao_tipo: ["buffer_2h", "agendamento_duplo", "checkin_fora_geofence", "checkin_baixa_precisao", "sem_briefing", "troca_fast", "outro"],
       integracao_status: ["pendente", "processando", "ok", "erro", "descartado"],
       integracao_tipo: ["notion_upsert", "calendar_upsert", "calendar_delete", "whatsapp_send", "email_send", "push_send", "drive_verificar"],

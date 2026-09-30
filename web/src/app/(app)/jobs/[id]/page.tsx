@@ -99,7 +99,7 @@ export default async function JobPage(props: PageProps<"/jobs/[id]">) {
         {s.ehGestao ? (
           localizacoes?.length ? (
             <ul className="divide-y divide-border text-sm">
-              {localizacoes.map((e) => (
+              {localizacoes.filter((e) => e.tipo !== "posicao").map((e) => (
                 <li key={e.id} className="flex flex-wrap justify-between gap-2 py-2">
                   <span className="capitalize">{e.tipo} · {fmtDataHora(e.capturado_em)}{e.origem_offline ? " (offline)" : ""}</span>
                   <span className={e.dentro_geofence === false ? "text-danger" : e.dentro_geofence ? "text-success" : "text-muted"}>
@@ -108,6 +108,11 @@ export default async function JobPage(props: PageProps<"/jobs/[id]">) {
                   {e.justificativa && <span className="w-full text-xs text-muted">Justificativa: {e.justificativa}</span>}
                 </li>
               ))}
+              {localizacoes.some((e) => e.tipo === "posicao") && (
+                <li className="py-2 text-xs text-muted">
+                  📡 {localizacoes.filter((e) => e.tipo === "posicao").length} posições compartilhadas durante a gravação (RF-38) · última {fmtDataHora(localizacoes.filter((e) => e.tipo === "posicao").at(-1)!.capturado_em)}
+                </li>
+              )}
             </ul>
           ) : (
             <p className="text-sm text-muted">Nenhum evento registrado.{job.duracao_real_min != null && ` Duração real: ${job.duracao_real_min} min.`}</p>

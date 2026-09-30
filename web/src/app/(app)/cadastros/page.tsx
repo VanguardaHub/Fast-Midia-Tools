@@ -12,13 +12,13 @@ export default async function CadastrosPage() {
     supabase.from("fast").select("id", { count: "exact", head: true }).eq("ativo", true).is("perfil_id", null),
     supabase.from("cliente").select("id", { count: "exact", head: true }).eq("ativo", true),
     supabase.from("perfil").select("id", { count: "exact", head: true }).eq("ativo", true),
-    supabase.from("convite").select("email", { count: "exact", head: true }).is("usado_em", null),
+    supabase.from("convite").select("email", { count: "exact", head: true }).is("primeiro_acesso_em", null),
   ]);
 
   const cards = [
     { href: "/cadastros/fasts", titulo: "Fasts", valor: fasts.count ?? 0, detalhe: `${fastsSemLogin.count ?? 0} ainda sem login`, desc: "Equipe de campo: nome, e-mail do calendário, WhatsApp e cor (RF-03)." },
     { href: "/cadastros/clientes", titulo: "Clientes", valor: clientes.count ?? 0, detalhe: "ativos", desc: "Clientes e pasta no Drive CRIAÇÃO/[ANO]/[CLIENTE] (RF-16)." },
-    { href: "/cadastros/acessos", titulo: "Acessos", valor: perfis.count ?? 0, detalhe: `${convitesPendentes.count ?? 0} convite(s) pendente(s)`, desc: "Perfis Fast, Analista, Supervisora e Admin; convites (RF-01, RF-02)." },
+    { href: "/cadastros/acessos", titulo: "Acessos", valor: perfis.count ?? 0, detalhe: `${convitesPendentes.count ?? 0} aguardando primeiro acesso`, desc: "Perfis Fast, Analista, Supervisora e Admin; convites (RF-01, RF-02)." },
   ];
   if (s.ehAdmin) {
     cards.push({ href: "/cadastros/configuracoes", titulo: "Configurações", valor: 0, detalhe: "", desc: "Buffer de 2h, raio da geofence, precisão, retenção e domínios de login." });

@@ -53,7 +53,7 @@ export default async function AlertasPage() {
 
       <section className="space-y-2">
         <h2 className="font-semibold">Alertas abertos ({alertas?.length ?? 0})</h2>
-        <p className="text-xs text-muted">Ao resolver, o alerta sai desta lista e passa para a seção abaixo, com quem resolveu e quando. Use “Reabrir” em caso de engano.</p>
+        <p className="text-xs text-muted">Ao resolver, o alerta sai desta lista e passa para a seção abaixo, com quem resolveu e quando. Um alerta resolvido por uma pessoa não é recriado pelo sistema para o mesmo job. Use “Reabrir” em caso de engano.</p>
         <ListaAlertas alertas={(alertas ?? []).map(paraLista)} />
       </section>
 

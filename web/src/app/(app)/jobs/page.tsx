@@ -12,7 +12,7 @@ export default async function JobsPage(props: PageProps<"/jobs">) {
   const sp = await props.searchParams;
   const visao = sp.visao === "lista" ? "lista" : "kanban";
   const supabase = await criarClienteServidor();
-  const { data: jobs } = await supabase
+  const { data: jobs, error } = await supabase
     .schema("analytics")
     .from("vw_jobs")
     .select("id, codigo, data, slot, status, cliente, fast, fast_cor, precisa_99, tem_briefing, checkin_em, qtd_alertas_abertos")
@@ -32,6 +32,7 @@ export default async function JobsPage(props: PageProps<"/jobs">) {
         </div>
       </header>
 
+      {error && <p className="rounded-xl bg-danger/10 p-3 text-sm text-danger">Falha ao consultar os jobs: {error.message}</p>}
       {visao === "kanban" ? (
         <Kanban jobs={jobs ?? []} podeMover={s.ehGestao} />
       ) : (

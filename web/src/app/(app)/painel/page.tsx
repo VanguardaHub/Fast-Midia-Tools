@@ -10,7 +10,7 @@ export default async function PainelPage() {
   await exigirGestao();
   const supabase = await criarClienteServidor();
   const hoje = hojeISO();
-  const [{ data: jobsHoje }, { data: alertas }, { data: excecoes }, { data: okr }] = await Promise.all([
+  const [{ data: jobsHoje, error: erroJobs }, { data: alertas }, { data: excecoes }, { data: okr }] = await Promise.all([
     supabase.schema("analytics").from("vw_jobs").select("*").eq("data", hoje).neq("status", "cancelado").order("inicio"),
     supabase.from("alerta").select("id, tipo, severidade, mensagem, criado_em, job_id").eq("resolvido", false).order("criado_em", { ascending: false }).limit(8),
     supabase.from("excecao").select("id", { count: "exact", head: true }).is("aprovada", null),
@@ -31,6 +31,7 @@ export default async function PainelPage() {
         <Link href="/agenda" className="btn-primary">+ Novo job</Link>
       </header>
 
+      {erroJobs && <p className="rounded-xl bg-danger/10 p-3 text-sm text-danger">Falha ao consultar os jobs: {erroJobs.message}</p>}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Kpi rotulo="Jobs hoje" valor={String(total)} />
         <Kpi rotulo="Com check-in" valor={`${comCheckin}/${total}`} tom={comCheckin === total && total > 0 ? "ok" : "neutro"} />

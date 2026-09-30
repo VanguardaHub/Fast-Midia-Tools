@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { criarClienteServidor } from "@/lib/supabase/server";
-import { obterSessao } from "@/lib/sessao";
+import { exigirGestao, obterSessao } from "@/lib/sessao";
 import { traduzirErro } from "@/lib/regras";
 import type { Database } from "@/lib/database.types";
 
@@ -204,6 +204,17 @@ export async function resolverAlerta(id: string): Promise<Resultado> {
     .update({ resolvido: true, resolvido_por: s.usuarioId, resolvido_em: new Date().toISOString() })
     .eq("id", id);
   if (error) return { ok: false, erro: traduzirErro(error.message) };
+  revalidatePath("/alertas");
+  revalidatePath("/painel");
+  return { ok: true };
+}
+
+/** RF-52 — reabre um alerta resolvido por engano (volta para a lista de abertos). */
+export async function reabrirAlerta(id: string): Promise<Resultado> {
+  await exigirGestao();
+  const supabase = await criarClienteServidor();
+  const { error } = await supabase.from("alerta").update({ resolvido: false, resolvido_por: null, resolvido_em: null }).eq("id", id);
+  if (error) return { ok: false, erro: /alerta_aberto_unico/.test(error.message) ? "Já existe um alerta aberto deste tipo para o job." : traduzirErro(error.message) };
   revalidatePath("/alertas");
   revalidatePath("/painel");
   return { ok: true };

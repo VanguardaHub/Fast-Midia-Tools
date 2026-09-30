@@ -39,13 +39,15 @@ export function RastreioJanela({ jobId, intervaloS, precisaoMaxM }: Props) {
   }, [jobId]);
 
   useEffect(() => {
-    if (pausado == null) return;
-    if (pausado) { setEstado("pausado"); return; }
-    if (typeof navigator === "undefined" || !navigator.geolocation) { setEstado("erro"); setErro("Este dispositivo não oferece geolocalização."); return; }
+    if (pausado == null || pausado) return;
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      const t = setTimeout(() => { setEstado("erro"); setErro("Este dispositivo não oferece geolocalização."); }, 0);
+      return () => clearTimeout(t);
+    }
 
     const politica = { intervaloMs: intervaloS * 1000, deslocamentoMinM: 25, precisaoMaxM };
     let ativo = true;
-    setEstado("iniciando");
+    const tInicio = setTimeout(() => { if (ativo) setEstado("iniciando"); }, 0);
 
     const id = navigator.geolocation.watchPosition(
       async (pos) => {
@@ -83,6 +85,7 @@ export function RastreioJanela({ jobId, intervaloS, precisaoMaxM }: Props) {
 
     return () => {
       ativo = false;
+      clearTimeout(tInicio);
       navigator.geolocation.clearWatch(id);
     };
   }, [jobId, intervaloS, precisaoMaxM, pausado]);
@@ -100,16 +103,17 @@ export function RastreioJanela({ jobId, intervaloS, precisaoMaxM }: Props) {
     sem_permissao: "🚫 sem permissão de localização",
     erro: "⚠️ compartilhamento indisponível",
   };
-  const cor = estado === "compartilhando" ? "bg-success" : estado === "pausado" ? "bg-border" : estado === "iniciando" ? "bg-warning" : "bg-danger";
+  const exibido: Estado = pausado ? "pausado" : estado;
+  const cor = exibido === "compartilhando" ? "bg-success" : exibido === "pausado" ? "bg-border" : exibido === "iniciando" ? "bg-warning" : "bg-danger";
 
   return (
     <section className="card space-y-2" aria-live="polite">
       <div className="flex items-center justify-between gap-2">
         <p className="flex items-center gap-2 text-sm font-medium">
-          <span className={`inline-block size-2.5 rounded-full ${cor} ${estado === "compartilhando" ? "animate-pulse" : ""}`} />
-          {rotulo[estado]}
+          <span className={`inline-block size-2.5 rounded-full ${cor} ${exibido === "compartilhando" ? "animate-pulse" : ""}`} />
+          {rotulo[exibido]}
         </p>
-        {estado !== "erro" && (
+        {exibido !== "erro" && (
           <button type="button" className="btn-outline min-h-9 text-xs" onClick={alternar}>
             {pausado ? "Retomar" : "Pausar"}
           </button>

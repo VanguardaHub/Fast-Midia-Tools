@@ -1,6 +1,6 @@
 # ADR-0005 — Posição do Fast em tempo real durante a gravação (rastreio na janela do job)
 
-**Status:** Aceito em 30/09/2026 — altera parcialmente a ADR-0003 (decisões 1 e 3). Condicionado à revisão do RIPD pelo DPO.
+**Status:** Aceito em 30/09/2026 — altera parcialmente a ADR-0003 (decisões 1 e 3). RIPD v1.0 elaborado e aprovado internamente pela gerência (`docs/lgpd/ripd-fast-midia-tools.md`); a empresa não possui DPO.
 **Decisor:** gerência do projeto (Jussara Cavalcante), exercendo a decisão 1 da seção 14 do escopo. Registrado como mudança de escopo: o documento de escopo (seção 4.2) listava o rastreio contínuo como fora do escopo inicial e o RF-38 com prioridade C.
 
 ## Contexto

@@ -8,7 +8,7 @@
 
 A plataforma está publicada em produção (`fast-midia-tools.vercel.app`) com todas as funcionalidades do escopo operando de ponta a ponta: agenda com regras, briefing, geofence, check-in e check-out por GPS, posição ao vivo durante a gravação, comprovantes de 99, Kanban, mapa do dia, alertas, indicadores, cadastros, visão do analista e atualização em tempo real. Os quatro achados P1 da revisão de QA foram corrigidos.
 
-O que separa o sistema do piloto **não é código**: são três bloqueadores de governança e dados (RIPD/termo aprovados pelo DPO, ciência da diretoria sobre o rastreio e a política BYOD, contas dos Fasts vinculadas) e duas credenciais externas que tornam o piloto útil (conta de serviço do Google Calendar e Resend para e-mail).
+O que separa o sistema do piloto **não é código**. Em 30/09 a gerência resolveu os bloqueadores de governança internamente: a empresa não possui DPO, então o **RIPD v1.0** e a **política BYOD** foram elaborados e aprovados pela gerência do projeto (`docs/lgpd/`), e a ciência formal da diretoria foi dispensada. Restam as contas dos Fasts vinculadas, os itens [VALIDAR] do RIPD e duas credenciais externas que tornam o piloto útil (conta de serviço do Google Calendar e Resend para e-mail).
 
 Proposta: **piloto em duas ondas, com duração total de 3 semanas**, começando com 2 Fasts e um cliente, ampliando para toda a equipe na segunda semana e fechando com a avaliação do ciclo 2 da pesquisa. Critério de sucesso: os OKRs da seção 3.2 do escopo medidos em ambiente real, com ≥ 90% de check-ins dentro da geofence e ≥ 95% das corridas 99 com comprovante validado.
 
@@ -38,8 +38,8 @@ Proposta: **piloto em duas ondas, com duração total de 3 semanas**, começando
 
 | # | Item | Tipo | Estado em 30/09 | Responsável | Prazo |
 |---|---|---|---|---|---|
-| P1 | RIPD revisado e termo de ciência 2.0 aprovados (seção 8; marco M3) | **Bloqueador** | Pendente | DPO / Jurídico | antes do 1º check-in real |
-| P2 | Ciência formal da diretoria: decisão 1 (rastreio na gravação, ADR-0005) e decisão 4 (BYOD) | **Bloqueador** | Pendente | Diretoria / RH | antes do 1º check-in real |
+| P1 | RIPD v1.0 e termo 2.0 aprovados internamente (sem DPO); confirmar os itens [VALIDAR] do RIPD (CNPJ, vínculo dos Fasts, canal do titular, prazo contábil) | **Bloqueador** | RIPD aprovado em 30/09; [VALIDAR] pendente | Gerência | 02/10 |
+| P2 | Decisões 1 (rastreio na gravação) e 4 (BYOD) exercidas pela gerência; política BYOD publicada; comunicação aos Fasts | Necessário | Exercidas em 30/09; comunicar na sessão de onboarding | Gerência / Supervisora | D1 |
 | P3 | Fasts do piloto cadastrados com e-mail correto e login vinculado | **Bloqueador** | 1 de 2 prontos (Fast "teste" sem login) | Supervisora | D0 |
 | P4 | Conta de serviço do Google + delegação em todo o domínio (ADR-0006); `GOOGLE_SERVICE_ACCOUNT_JSON` no Vercel | Necessário | Pendente | TI | onda 1 |
 | P5 | Resend: `RESEND_API_KEY`, `EMAIL_REMETENTE`, `EMAIL_SUPERVISORA` no Vercel | Necessário | Pendente | TI | onda 1 |
@@ -59,11 +59,11 @@ Proposta: **piloto em duas ondas, com duração total de 3 semanas**, começando
 | Fase | Período | Atividades | Entregável |
 |---|---|---|---|
 | **D0 — Preparação** | 01/10 | P3, P8; sessão de teste em aparelho (P6) com a Diana no job #7; abrir diário do piloto | Checklist P6 preenchido; ocorrências registradas |
-| **Onda 1 — Piloto restrito** | 02/10 a 08/10 | 2 Fasts, 1 analista, supervisora; 1 cliente parceiro; jobs reais somente após P1 e P2 assinados; P4 e P5 configurados pela TI durante a semana | Relatório de onda 1 (defeitos, fricções, cobertura de sinal) |
+| **Onda 1 — Piloto restrito** | 02/10 a 08/10 | 2 Fasts, 1 analista, supervisora; 1 cliente parceiro; jobs reais após a comunicação do termo e da política BYOD aos Fasts; P4 e P5 configurados pela TI durante a semana | Relatório de onda 1 (defeitos, fricções, cobertura de sinal) |
 | **Onda 2 — Equipe completa** | 09/10 a 15/10 | Todos os Fasts e analistas; Calendar e e-mail ativos; correções da onda 1 publicadas; Power BI conectado | Indicadores com n suficiente; painel executivo |
 | **Avaliação** | 16/10 a 21/10 | Questionário de percepção (Fasts e gestão); consolidação dos OKRs; decisão go/no-go para operação plena; registro no protocolo de pesquisa (ciclo 2) | Relatório de avaliação do piloto; ata de decisão |
 
-Marcos: **M-A** (D0) prontidão técnica e de dados confirmada; **M-B** (02/10) RIPD e decisões 1 e 4 assinadas; **M-C** (09/10) credenciais externas ativas; **M-D** (21/10) go/no-go.
+Marcos: **M-A** (D0) prontidão técnica e de dados confirmada; **M-B** (02/10) itens [VALIDAR] do RIPD confirmados e Fasts comunicados; **M-C** (09/10) credenciais externas ativas; **M-D** (21/10) go/no-go e designação do encarregado.
 
 ---
 
@@ -71,8 +71,8 @@ Marcos: **M-A** (D0) prontidão técnica e de dados confirmada; **M-B** (02/10) 
 
 | Atividade | Gerência (Jussara) | Supervisora | Analistas | Fasts | TI | DPO / Jurídico | Diretoria / RH |
 |---|---|---|---|---|---|---|---|
-| Aprovação do RIPD e do termo 2.0 | C | I | I | I | I | **A/R** | I |
-| Decisões 1 (rastreio) e 4 (BYOD) | R | C | I | I | I | C | **A** |
+| Aprovação do RIPD, do termo 2.0 e da política BYOD (sem DPO) | **A/R** | C | I | I | I | – | I |
+| Decisões 1 (rastreio) e 4 (BYOD) | **A/R** | C | I | I | I | – | I |
 | Cadastro e vínculo de contas dos Fasts | A | **R** | I | C | I | – | – |
 | Credenciais Google Calendar e Resend | A | I | – | – | **R** | – | – |
 | Teste em aparelho e onboarding | **A/R** | R | I | R | C | – | – |
@@ -118,7 +118,7 @@ R = executa · A = responde · C = consultado · I = informado
 
 | # | Risco | Prob. | Impacto | Mitigação | Dono |
 |---|---|---|---|---|---|
-| R1 | RIPD atrasa e o piloto começa sem base legal | Média | Alto | Onda 1 só com jobs internos (sem cliente) até a assinatura; rastreio desligável em `configuracao.rastreio_habilitado` | Gerência / DPO |
+| R1 | Ausência de encarregado (DPO) e itens [VALIDAR] do RIPD não confirmados | Média | Médio | RIPD v1.0 aprovado pela gerência sustenta o piloto; designar encarregado até 21/10; confirmar [VALIDAR] até 02/10; rastreio desligável em `configuracao.rastreio_habilitado` | Gerência |
 | R2 | iOS interrompe o GPS em segundo plano; cobertura baixa | Alta | Médio | Orientar tela aberta; medir cobertura; app nativo fica como decisão futura | Gerência |
 | R3 | Fast recusa o rastreio | Média | Médio | Termo claro, botão Pausar, transparência de consultas em Minha conta, sessão de esclarecimento | Supervisora / RH |
 | R4 | Credenciais externas (Calendar, Resend) não chegam na onda 1 | Média | Médio | Agenda opera só com o banco; convites por link copiado; não bloqueia o piloto | TI |
@@ -139,14 +139,14 @@ R = executa · A = responde · C = consultado · I = informado
 
 ## 11. Critérios de go/no-go (21/10)
 
-**Go** para operação plena quando: P1 e P2 assinados; 0 ocorrências P1 abertas; indicadores da seção 8 atendidos; ≥ 80% dos Fasts com percepção ≥ 3 no questionário.
+**Go** para operação plena quando: itens [VALIDAR] do RIPD confirmados e Fasts comunicados; 0 ocorrências P1 abertas; indicadores da seção 8 atendidos; ≥ 80% dos Fasts com percepção ≥ 3 no questionário.
 **No-go / prorrogação** quando: qualquer bloqueador aberto, ou check-in dentro da geofence < 85%, ou cobertura de sinal < 50% sem causa identificada.
 
 ---
 
 ## 12. Próximos passos imediatos
 
-1. Enviar este plano ao DPO e à diretoria com as decisões 1 e 4 para assinatura (P1, P2).
+1. Confirmar os itens [VALIDAR] do RIPD e comunicar o termo 2.0 e a política BYOD aos Fasts (P1, P2).
 2. Vincular o login do Fast "teste" ou substituí-lo por um Fast real; confirmar a geofence do job #7 (P3, P8).
 3. Executar o teste em aparelho com a Diana no job #7 e registrar o resultado no diário (P6).
 4. Encaminhar à TI a configuração do Google Calendar e do Resend com os passos da ADR-0006 e do `.env.example` (P4, P5).

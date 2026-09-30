@@ -4,7 +4,7 @@ import { exigirGestao } from "@/lib/sessao";
 import { Mapa } from "@/components/mapa";
 import { AoVivo } from "@/components/ao-vivo";
 import { STATUS_ROTULO, fmtData, fmtHora, hojeISO } from "@/lib/formato";
-import { idadeSegundos, posicaoDesatualizada } from "@/lib/rastreio";
+import { agoraMs, idadeSegundos, posicaoDesatualizada } from "@/lib/rastreio";
 
 export const metadata = { title: "Mapa do dia" };
 
@@ -18,7 +18,7 @@ export default async function MapaPage(props: PageProps<"/mapa">) {
   const supabase = await criarClienteServidor();
   const { data: linhas, error } = await supabase.rpc("mapa_do_dia", { p_data: data });
 
-  const agora = Date.now();
+  const agora = agoraMs();
   const rotuloEvento = (l: { tipo: string | null; capturado_em: string }) => {
     if (!l.tipo) return "sem check-in";
     if (l.tipo === "posicao") {

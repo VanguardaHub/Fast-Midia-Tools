@@ -35,6 +35,11 @@ export function deveEnviarPosicao(anterior: Posicao | null, atual: Posicao, poli
   return decorridoMs >= politica.intervaloMs * 4;
 }
 
+/** Instante atual em ms (isolado para uso em Server Components, que não devem chamar Date.now diretamente no render). */
+export function agoraMs(): number {
+  return Date.now();
+}
+
 /** Idade de uma posição em segundos (para o rótulo "há Xs" e para o estado "sem sinal"). */
 export function idadeSegundos(capturadoEm: string, agora: number = Date.now()): number {
   return Math.max(0, Math.round((agora - new Date(capturadoEm).getTime()) / 1000));

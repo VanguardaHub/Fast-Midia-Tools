@@ -1,34 +1,20 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { criarClienteBrowser } from "@/lib/supabase/client";
 import { validarCorrida } from "@/lib/actions/jobs";
 import { salvarCorrida } from "@/lib/actions/campo";
 import { fmtMoeda } from "@/lib/formato";
 import { SeletorArquivo } from "@/components/seletor-arquivo";
+import { PreviewComprovante } from "@/components/preview-comprovante";
 import type { Database } from "@/lib/database.types";
 
 type Corrida = Database["public"]["Tables"]["corrida_99"]["Row"];
 type Sentido = "ida" | "volta";
 
-/** RF-41 / RF-43 / RF-44 — corridas de 99: edição pela gestão (valor, trajeto, comprovante) e conciliação. */
+/** RF-41 / RF-43 / RF-44 — corridas de 99: visualização do comprovante, edição pela gestão (valor, trajeto, arquivo) e conciliação. */
 export function CorridasJob({ jobId, corridas, ehGestao }: { jobId: string; corridas: Corrida[]; ehGestao: boolean }) {
-  const [urls, setUrls] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    const supabase = criarClienteBrowser();
-    (async () => {
-      const m: Record<string, string> = {};
-      for (const c of corridas) {
-        if (!c.comprovante_path) continue;
-        const { data } = await supabase.storage.from("comprovantes-99").createSignedUrl(c.comprovante_path, 600);
-        if (data?.signedUrl) m[c.id] = data.signedUrl;
-      }
-      setUrls(m);
-    })();
-  }, [corridas]);
-
   const total = corridas.reduce((a, c) => a + (c.valor ?? 0), 0);
   return (
     <section className="card space-y-3">
@@ -38,7 +24,7 @@ export function CorridasJob({ jobId, corridas, ehGestao }: { jobId: string; corr
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         {(["ida", "volta"] as const).map((s) => (
-          <CorridaCard key={s} jobId={jobId} sentido={s} corrida={corridas.find((x) => x.sentido === s) ?? null} url={corridas.find((x) => x.sentido === s)?.id ? urls[corridas.find((x) => x.sentido === s)!.id] : undefined} ehGestao={ehGestao} />
+          <CorridaCard key={s} jobId={jobId} sentido={s} corrida={corridas.find((x) => x.sentido === s) ?? null} ehGestao={ehGestao} />
         ))}
       </div>
       <p className="text-xs text-muted">Job não pode ser concluído sem os dois comprovantes (RF-42). Meta OKR: ≥ 95% das corridas validadas. Corridas validadas ficam bloqueadas para edição pelo Fast.</p>
@@ -46,7 +32,7 @@ export function CorridasJob({ jobId, corridas, ehGestao }: { jobId: string; corr
   );
 }
 
-function CorridaCard({ jobId, sentido, corrida, url, ehGestao }: { jobId: string; sentido: Sentido; corrida: Corrida | null; url?: string; ehGestao: boolean }) {
+function CorridaCard({ jobId, sentido, corrida, ehGestao }: { jobId: string; sentido: Sentido; corrida: Corrida | null; ehGestao: boolean }) {
   const router = useRouter();
   const [editando, setEditando] = useState(false);
   const [valor, setValor] = useState(corrida?.valor?.toString() ?? "");
@@ -100,7 +86,11 @@ function CorridaCard({ jobId, sentido, corrida, url, ehGestao }: { jobId: string
           {(corrida?.origem || corrida?.destino) && (
             <p className="text-muted">{corrida?.origem ?? "—"} → {corrida?.destino ?? "—"}{corrida?.divergencia_destino ? " ⚠️ destino divergente da geofence" : ""}</p>
           )}
-          {url && <a className="text-primary underline" href={url} target="_blank" rel="noreferrer">Ver comprovante</a>}
+          {corrida?.comprovante_path ? (
+            <PreviewComprovante path={corrida.comprovante_path} rotulo={`Comprovante da ${sentido}`} altura="240px" />
+          ) : (
+            <p className="text-xs text-muted">O Fast ainda não anexou o comprovante desta corrida.</p>
+          )}
           {ehGestao && (
             <div className="flex flex-wrap gap-2 pt-1">
               <button type="button" className="btn-outline min-h-9 text-xs" disabled={pendente} onClick={() => setEditando(true)}>{corrida ? "Editar" : "Registrar corrida"}</button>

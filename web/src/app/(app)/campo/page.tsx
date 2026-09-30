@@ -5,6 +5,7 @@ import { obterSessao } from "@/lib/sessao";
 import { StatusBadge } from "@/components/status-badge";
 import { SLOT_ROTULO, fmtData, hojeISO } from "@/lib/formato";
 import { SincronizarOffline } from "./sincronizar-offline";
+import { AoVivo } from "@/components/ao-vivo";
 
 export const metadata = { title: "Jobs de hoje" };
 
@@ -40,7 +41,7 @@ export default async function CampoPage() {
       <header className="flex items-end justify-between">
         <div>
           <h1 className="text-2xl font-bold">Hoje</h1>
-          <p className="text-sm text-muted">{fmtData(hoje, "EEEE, dd 'de' MMMM")}</p>
+          <p className="text-sm text-muted">{fmtData(hoje, "EEEE, dd 'de' MMMM")} · <AoVivo tabelas={["job", "briefing"]} canal="campo" /></p>
         </div>
       </header>
 

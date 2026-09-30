@@ -3,6 +3,7 @@ import { criarClienteServidor } from "@/lib/supabase/server";
 import { exigirGestao } from "@/lib/sessao";
 import { ALERTA_ROTULO, EXCECAO_ROTULO, diasAtrasISO, fmtDataHora } from "@/lib/formato";
 import { ListaAlertas } from "./lista-alertas";
+import { AoVivo } from "@/components/ao-vivo";
 
 export const metadata = { title: "Alertas e exceções" };
 
@@ -29,7 +30,7 @@ export default async function AlertasPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Alertas e exceções</h1>
+      <div className="flex items-center gap-3"><h1 className="text-2xl font-bold">Alertas e exceções</h1><AoVivo tabelas={["alerta", "excecao", "job"]} canal="alertas" /></div>
 
       <section className="space-y-2">
         <h2 className="font-semibold">Exceções aguardando decisão ({excecoes?.length ?? 0})</h2>

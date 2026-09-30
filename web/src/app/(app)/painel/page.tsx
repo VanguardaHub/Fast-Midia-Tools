@@ -27,7 +27,7 @@ export default async function PainelPage() {
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Painel da supervisora</h1>
-          <p className="text-sm text-muted">{fmtData(hoje, "EEEE, dd 'de' MMMM 'de' yyyy")} · <AoVivo /></p>
+          <p className="text-sm text-muted">{fmtData(hoje, "EEEE, dd 'de' MMMM 'de' yyyy")} · <AoVivo canal="painel" /></p>
         </div>
         <Link href="/agenda" className="btn-primary">+ Novo job</Link>
       </header>

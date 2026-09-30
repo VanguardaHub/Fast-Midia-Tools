@@ -41,7 +41,7 @@ export default async function MapaPage(props: PageProps<"/mapa">) {
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Mapa do dia</h1>
-          <p className="text-sm text-muted">{fmtData(data, "EEEE, dd/MM/yyyy")} · consulta registrada na auditoria · <AoVivo intervaloMs={30_000} /></p>
+          <p className="text-sm text-muted">{fmtData(data, "EEEE, dd/MM/yyyy")} · consulta registrada na auditoria · <AoVivo tabelas={["job", "alerta"]} intervaloMs={30_000} canal="mapa" /></p>
         </div>
         <form className="flex gap-2">
           <input type="date" name="data" defaultValue={data} className="input" />

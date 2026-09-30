@@ -7,6 +7,7 @@ import { CheckinPanel } from "./checkin-panel";
 import { Comprovantes99 } from "./comprovantes-99";
 import { MaterialEntregue } from "./material-entregue";
 import { RastreioJanela } from "./rastreio-janela";
+import { AoVivo } from "@/components/ao-vivo";
 
 export default async function JobCampoPage(props: PageProps<"/campo/jobs/[id]">) {
   const { id } = await props.params;
@@ -37,7 +38,7 @@ export default async function JobCampoPage(props: PageProps<"/campo/jobs/[id]">)
         <div className="flex items-start justify-between gap-3">
           <div>
             <h1 className="text-xl font-bold">{job.cliente?.nome}</h1>
-            <p className="text-sm text-muted">{fmtData(job.data, "EEE dd/MM")} · {SLOT_ROTULO[job.slot]} · Job #{job.codigo}</p>
+            <p className="text-sm text-muted">{fmtData(job.data, "EEE dd/MM")} · {SLOT_ROTULO[job.slot]} · Job #{job.codigo} · <AoVivo tabelas={["job", "briefing", "corrida_99"]} canal={`campo-${job.id}`} compacto /></p>
           </div>
           <StatusBadge status={job.status} />
         </div>

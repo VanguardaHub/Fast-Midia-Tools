@@ -29,7 +29,7 @@ Legenda de situação: ✅ implementado · 🟡 parcial / depende de credencial 
 | RF-37 | Registro offline com sincronização | S | `lib/offline.ts` (IndexedDB), `SincronizarOffline`, chave idempotente, service worker | ✅ básico |
 | RF-38 | Rastreio contínuo na janela do job | C → implementado (decisão 1 exercida, ADR-0005) | tipo `posicao`, `RastreioJanela`, `lib/rastreio.ts`, P0012/P0013, `rastreio_*` em `configuracao`, termo 2.0 | ✅ só entre chegada e saída, app aberto; RIPD a revisar |
 | RF-40 | Solicitação de 99 marcada no briefing | M | `briefing.precisa_99` → `job.precisa_99` | ✅ |
-| RF-41 | Upload de comprovantes de ida/volta e valores pelo app | M | `Comprovantes99`, bucket `comprovantes-99`, `corrida_99` | ✅ |
+| RF-41 | Upload de comprovantes de ida/volta e valores pelo app | M | `Comprovantes99`, `PreviewComprovante` (miniatura/PDF por URL assinada), bucket `comprovantes-99`, `corrida_99` | ✅ |
 | RF-42 | Bloqueio preventivo de "Concluído" sem os dois comprovantes | M | `tg_job_validar` (P0004) | ✅ |
 | RF-43 | Comparação destino × geofence com alerta | S | `tg_corrida_99_validar` (`divergencia_destino`), alerta `destino_divergente` | ✅ (destino_ponto quando informado) |
 | RF-44 | Gasto de 99 por Fast e por dia | M | `analytics.vw_gasto_99`, `vw_gasto_99_por_fast_dia`, `/indicadores` | ✅ |

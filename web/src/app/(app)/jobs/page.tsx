@@ -3,6 +3,7 @@ import { criarClienteServidor } from "@/lib/supabase/server";
 import { obterSessao } from "@/lib/sessao";
 import { STATUS_ORDEM, STATUS_ROTULO, SLOT_ROTULO, diasAtrasISO, fmtData } from "@/lib/formato";
 import { Kanban } from "./kanban";
+import { AoVivo } from "@/components/ao-vivo";
 
 export const metadata = { title: "Jobs" };
 
@@ -24,7 +25,7 @@ export default async function JobsPage(props: PageProps<"/jobs">) {
   return (
     <div className="space-y-4">
       <header className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">Jobs</h1>
+        <div className="flex items-center gap-3"><h1 className="text-2xl font-bold">Jobs</h1><AoVivo tabelas={["job", "briefing", "alerta", "corrida_99"]} canal="jobs" /></div>
         <div className="flex gap-2">
           <Link href="/jobs?visao=kanban" className={`btn-outline ${visao === "kanban" ? "border-primary text-primary" : ""}`}>Kanban</Link>
           <Link href="/jobs?visao=lista" className={`btn-outline ${visao === "lista" ? "border-primary text-primary" : ""}`}>Lista</Link>

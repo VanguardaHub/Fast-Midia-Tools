@@ -9,6 +9,7 @@ import { PontoGeofence } from "./ponto-geofence";
 import { AcoesJob } from "./acoes-job";
 import { ExcecoesJob } from "./excecoes-job";
 import { CorridasJob } from "./corridas-job";
+import { AoVivo } from "@/components/ao-vivo";
 
 export default async function JobPage(props: PageProps<"/jobs/[id]">) {
   const { id } = await props.params;
@@ -42,6 +43,7 @@ export default async function JobPage(props: PageProps<"/jobs/[id]">) {
               {job.data_edicao && ` · edição ${fmtData(job.data_edicao, "dd/MM")} (${job.bloco_edicao === "manha" ? "manhã" : "tarde"})`}
             </p>
             {job.analista && <p className="text-sm text-muted">Analista: {job.analista.nome}{job.analista_whatsapp ? ` · ${job.analista_whatsapp}` : ""}</p>}
+            <AoVivo tabelas={["job", "briefing", "corrida_99", "excecao", "alerta"]} canal={`job-${job.id}`} />
           </div>
           <div className="flex flex-col items-end gap-2">
             <StatusBadge status={job.status} />

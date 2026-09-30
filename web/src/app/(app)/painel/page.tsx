@@ -2,6 +2,7 @@ import Link from "next/link";
 import { criarClienteServidor } from "@/lib/supabase/server";
 import { exigirGestao } from "@/lib/sessao";
 import { StatusBadge } from "@/components/status-badge";
+import { AoVivo } from "@/components/ao-vivo";
 import { ALERTA_ROTULO, SLOT_ROTULO, diasAtrasISO, fmtData, fmtHora, hojeISO } from "@/lib/formato";
 
 export const metadata = { title: "Painel" };
@@ -26,7 +27,7 @@ export default async function PainelPage() {
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Painel da supervisora</h1>
-          <p className="text-sm text-muted">{fmtData(hoje, "EEEE, dd 'de' MMMM 'de' yyyy")}</p>
+          <p className="text-sm text-muted">{fmtData(hoje, "EEEE, dd 'de' MMMM 'de' yyyy")} · <AoVivo /></p>
         </div>
         <Link href="/agenda" className="btn-primary">+ Novo job</Link>
       </header>

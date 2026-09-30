@@ -165,7 +165,7 @@ export function transicaoPermitida(de: string, para: string): boolean {
   return (TRANSICOES[de] ?? []).includes(para);
 }
 
-/** Traduz mensagens de erro do banco (códigos P0002..P0011) para o usuário. */
+/** Traduz mensagens de erro do banco (códigos P0002..P0013) para o usuário. */
 export function traduzirErro(mensagem: string | undefined | null): string {
   if (!mensagem) return "Erro desconhecido";
   const mapa: [RegExp, string][] = [
@@ -177,6 +177,8 @@ export function traduzirErro(mensagem: string | undefined | null): string {
     [/SEM_BRIEFING/, "Este job ainda não tem briefing. Nenhuma gravação começa sem briefing."],
     [/STATUS_INVALIDO_PARA_CHECKIN/, "O job não está em status que permita check-in."],
     [/SEM_CHECKIN/, "Registre a chegada antes da saída."],
+    [/RASTREIO_DESABILITADO/, "O compartilhamento de posição está desligado pela administração."],
+    [/RASTREIO_FORA_DA_GRAVACAO/, "A posição só é compartilhada entre a chegada e a saída do job."],
     [/BAIXA_PRECISAO_SEM_JUSTIFICATIVA/, "Precisão do GPS insuficiente. Informe uma justificativa."],
     [/FORA_GEOFENCE_SEM_JUSTIFICATIVA/, "Você está fora da geofence do job. Informe uma justificativa."],
     [/job_slot_unico|job_sem_sobreposicao/, "Este slot acabou de ser ocupado por outro agendamento. Atualize a agenda."],

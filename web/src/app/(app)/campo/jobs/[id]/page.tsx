@@ -6,6 +6,7 @@ import { SLOT_ROTULO, fmtData, fmtDataHora } from "@/lib/formato";
 import { CheckinPanel } from "./checkin-panel";
 import { Comprovantes99 } from "./comprovantes-99";
 import { MaterialEntregue } from "./material-entregue";
+import { RastreioJanela } from "./rastreio-janela";
 
 export default async function JobCampoPage(props: PageProps<"/campo/jobs/[id]">) {
   const { id } = await props.params;
@@ -18,7 +19,7 @@ export default async function JobCampoPage(props: PageProps<"/campo/jobs/[id]">)
     supabase.rpc("job_coordenadas", { p_job_id: id }),
     supabase.rpc("consultar_localizacoes_job", { p_job_id: id }),
     supabase.from("corrida_99").select("*").eq("job_id", id),
-    supabase.from("configuracao").select("chave, valor").in("chave", ["precisao_maxima_m", "janela_checkin_antes_min", "janela_checkin_depois_min"]),
+    supabase.from("configuracao").select("chave, valor").in("chave", ["precisao_maxima_m", "janela_checkin_antes_min", "janela_checkin_depois_min", "rastreio_habilitado", "rastreio_intervalo_s"]),
   ]);
   if (!job) notFound();
 
@@ -27,6 +28,8 @@ export default async function JobCampoPage(props: PageProps<"/campo/jobs/[id]">)
   const chegada = eventos?.find((e) => e.tipo === "chegada") ?? null;
   const saida = eventos?.find((e) => e.tipo === "saida") ?? null;
   const cfgMap = Object.fromEntries((cfg ?? []).map((x) => [x.chave, Number(x.valor)]));
+  const rastreioHabilitado = (cfg ?? []).some((x) => x.chave === "rastreio_habilitado" && x.valor === true);
+  const emGravacao = Boolean(chegada) && !saida && job.status === "em_gravacao";
 
   return (
     <div className="mx-auto max-w-2xl space-y-5">
@@ -75,6 +78,10 @@ export default async function JobCampoPage(props: PageProps<"/campo/jobs/[id]">)
         janelaDepoisMin={cfgMap.janela_checkin_depois_min ?? 240}
         duracaoRealMin={job.duracao_real_min}
       />
+
+      {rastreioHabilitado && emGravacao && (
+        <RastreioJanela jobId={job.id} intervaloS={cfgMap.rastreio_intervalo_s || 30} precisaoMaxM={Math.max(cfgMap.precisao_maxima_m ?? 100, 150)} />
+      )}
 
       {job.status === "em_gravacao" && saida && <MaterialEntregue jobId={job.id} />}
       {job.material_entregue_em && <p className="text-sm text-success">✅ Material entregue em {fmtDataHora(job.material_entregue_em)}</p>}

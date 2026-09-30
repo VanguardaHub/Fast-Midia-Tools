@@ -27,7 +27,7 @@ Legenda de situação: ✅ implementado · 🟡 parcial / depende de credencial 
 | RF-35 | Captura só com app aberto e na janela, com indicador | M | `capturarLocalizacao()` pontual; P0006 (janela); indicador no `CheckinPanel` | ✅ |
 | RF-36 | Geocodificação com confirmação manual no mapa | M | `/api/geocodificar` (Nominatim/Google), `PontoGeofence`, `definir_ponto_job`, `ponto_confirmado` | ✅ |
 | RF-37 | Registro offline com sincronização | S | `lib/offline.ts` (IndexedDB), `SincronizarOffline`, chave idempotente, service worker | ✅ básico |
-| RF-38 | Rastreio contínuo na janela do job | C | — (decisão da diretoria, RIPD) | ⏳ Fase 5 |
+| RF-38 | Rastreio contínuo na janela do job | C → implementado (decisão 1 exercida, ADR-0005) | tipo `posicao`, `RastreioJanela`, `lib/rastreio.ts`, P0012/P0013, `rastreio_*` em `configuracao`, termo 2.0 | ✅ só entre chegada e saída, app aberto; RIPD a revisar |
 | RF-40 | Solicitação de 99 marcada no briefing | M | `briefing.precisa_99` → `job.precisa_99` | ✅ |
 | RF-41 | Upload de comprovantes de ida/volta e valores pelo app | M | `Comprovantes99`, bucket `comprovantes-99`, `corrida_99` | ✅ |
 | RF-42 | Bloqueio preventivo de "Concluído" sem os dois comprovantes | M | `tg_job_validar` (P0004) | ✅ |

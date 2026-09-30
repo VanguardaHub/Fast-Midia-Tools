@@ -20,9 +20,10 @@ export default async function ConsentimentoPage(props: PageProps<"/consentimento
       <p className="text-sm text-muted">Versão {termo?.versao} · Seção 8 do escopo (LGPD): coleta mínima, transparente e limitada à janela do job.</p>
       <div className="card whitespace-pre-line text-base leading-relaxed">{termo?.conteudo}</div>
       <ul className="card space-y-2 text-sm">
-        <li>📍 Captura apenas em <strong>chegada, saída e corrida</strong>, com o app aberto.</li>
-        <li>🕒 Somente dentro da janela do job. Nunca fora do expediente.</li>
-        <li>🗑️ Exclusão automática após 90 dias.</li>
+        <li>📍 Captura em <strong>chegada, saída e corrida</strong>, por toque, com o app aberto.</li>
+        <li>📡 Entre a chegada e a saída, com a tela do job aberta, posição a cada ~30 s para a supervisora, com indicador visível e botão de pausa.</li>
+        <li>🕒 Somente dentro da janela do job. Nunca fora do expediente nem em segundo plano.</li>
+        <li>🗑️ Exclusão automática: posições da gravação após 7 dias; chegada, saída e corrida após 90 dias.</li>
         <li>👁️ Somente Supervisora e Admin consultam posições; toda consulta fica registrada.</li>
         <li>✉️ Acesso, correção e contestação pelo canal do DPO.</li>
       </ul>

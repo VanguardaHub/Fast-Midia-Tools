@@ -10,7 +10,7 @@ export type Resultado<T = undefined> = { ok: true; dados?: T } | { ok: false; er
 
 const EventoSchema = z.object({
   jobId: z.string().uuid(),
-  tipo: z.enum(["chegada", "saida", "corrida"]),
+  tipo: z.enum(["chegada", "saida", "corrida", "posicao"]),
   lat: z.number().min(-90).max(90),
   lng: z.number().min(-180).max(180),
   precisaoM: z.number().min(0),
@@ -21,7 +21,7 @@ const EventoSchema = z.object({
 });
 export type EntradaEvento = z.infer<typeof EventoSchema>;
 
-/** RF-31 / RF-32 / RF-37 — registra check-in, check-out ou corrida (idempotente por chave). */
+/** RF-31 / RF-32 / RF-37 / RF-38 — registra check-in, check-out, corrida ou posição de rastreio (idempotente por chave). */
 export async function registrarEvento(entrada: EntradaEvento): Promise<Resultado<{ dentroGeofence: boolean | null; distanciaM: number | null }>> {
   const parse = EventoSchema.safeParse(entrada);
   if (!parse.success) return { ok: false, erro: parse.error.issues.map((i) => i.message).join("; ") };
@@ -39,6 +39,8 @@ export async function registrarEvento(entrada: EntradaEvento): Promise<Resultado
     p_offline: d.offline ?? false,
   });
   if (error) return { ok: false, erro: traduzirErro(error.message) };
+  // Posição de rastreio (RF-38): o banco pode descartar por frequência (retorna nulo) e não há o que revalidar.
+  if (d.tipo === "posicao") return { ok: true, dados: { dentroGeofence: data?.dentro_geofence ?? null, distanciaM: data?.distancia_m ?? null } };
   revalidatePath(`/campo/jobs/${d.jobId}`);
   revalidatePath("/campo");
   revalidatePath("/mapa");

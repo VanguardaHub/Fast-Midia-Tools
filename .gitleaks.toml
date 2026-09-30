@@ -1,0 +1,17 @@
+title = "Fast Mídia Tools — regras de varredura de segredos"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Chaves publicáveis do Supabase (públicas por definição) e placeholders"
+regexes = [
+  '''sb_publishable_[A-Za-z0-9_-]+''',
+  '''XXXXXXXX''',
+  '''sb_publishable_ci_placeholder''',
+]
+paths = [
+  '''apps-script/config\.exemplo\.gs''',
+  '''web/\.env\.example''',
+  '''pnpm-lock\.yaml''',
+]

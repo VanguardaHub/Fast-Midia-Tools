@@ -18,8 +18,7 @@ export default async function LoginPage(props: PageProps<"/login">) {
         </div>
         <LoginForm next={next} erroInicial={erro} />
         <p className="mt-6 text-xs leading-relaxed text-muted">
-          Somente e-mails do domínio corporativo ou convidados pela supervisão. A sessão expira
-          automaticamente. Localização é coletada apenas em eventos do job, com o app aberto.
+          Acesso por e-mail e senha (Supabase Auth). Somente e-mails do domínio corporativo ou convidados pela supervisão; a sessão expira automaticamente. Localização é coletada apenas em eventos do job, com o app aberto.
         </p>
       </div>
     </main>

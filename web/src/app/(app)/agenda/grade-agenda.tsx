@@ -9,7 +9,7 @@ import { detectarConflitos } from "@/lib/regras";
 import { NovoJobForm } from "./novo-job-form";
 
 type Slot = "manha" | "tarde";
-interface Fast { id: string; nome: string; cor: string }
+interface Fast { id: string; nome: string; cor: string; email_calendario?: string }
 interface JobResumo { id: string; codigo: number; fast_id: string; data: string; slot: Slot; status: string; cliente: string }
 interface Cliente { id: string; nome: string; grupo: string | null }
 
@@ -55,7 +55,7 @@ export function GradeAgenda({ dias, fasts, jobs, clientes, bloqueios, ehGestao }
                     <div className="grid gap-1">
                       {(["manha", "tarde"] as Slot[]).map((slot) => {
                         const j = mapa.get(`${f.id}|${d}|${slot}`);
-                        const bloqueado = bloqueios.some((b) => b.data === d && b.slot === slot && b.fast_email && false);
+                        const bloqueado = bloqueios.some((b) => b.data === d && b.slot === slot && b.fast_email.toLowerCase() === (f.email_calendario ?? "").toLowerCase());
                         if (j) {
                           return (
                             <Link key={slot} href={`/jobs/${j.id}`} className={`block truncate rounded-lg px-2 py-1.5 text-xs ${STATUS_COR[j.status as keyof typeof STATUS_COR]}`} title={`${j.cliente} · ${SLOT_ROTULO[slot]}`}>
@@ -67,10 +67,11 @@ export function GradeAgenda({ dias, fasts, jobs, clientes, bloqueios, ehGestao }
                           <button
                             key={slot}
                             disabled={bloqueado}
+                            title={bloqueado ? "Ocupado no Google Calendar do Fast" : `Agendar ${SLOT_ROTULO[slot]}`}
                             onClick={() => setSelecao({ fastId: f.id, data: d, slot })}
-                            className="rounded-lg border border-dashed border-border px-2 py-1.5 text-left text-xs text-muted hover:border-primary hover:text-primary disabled:opacity-40"
+                            className={`rounded-lg border px-2 py-1.5 text-left text-xs ${bloqueado ? "border-warning/40 bg-warning/10 text-warning" : "border-dashed border-border text-muted hover:border-primary hover:text-primary"} disabled:opacity-70`}
                           >
-                            {slot === "manha" ? "Manhã" : "Tarde"} · livre
+                            {slot === "manha" ? "Manhã" : "Tarde"} · {bloqueado ? "ocupado (Calendar)" : "livre"}
                           </button>
                         );
                       })}

@@ -9,7 +9,7 @@ Legenda de situação: ✅ implementado · 🟡 parcial / depende de credencial 
 | RF-01 | Login corporativo e sessão com expiração | M | Supabase Auth (magic link, senha, Google OAuth preparado); trigger `tg_auth_usuario_validar` (domínio/convite); `proxy.ts` | ✅ (Google OAuth aguarda decisão 3) |
 | RF-02 | Perfis Fast/Analista/Supervisora/Admin com RLS | M | `perfil`, políticas em 0004/0006, `auth_perfil()` | ✅ |
 | RF-03 | Cadastro de Fasts por interface | M | `/cadastros/fasts` (criar, editar, vincular conta, desativar, excluir sem jobs), `/cadastros/clientes`, `/cadastros/acessos` (nome, telefone, perfil, status) | ✅ |
-| RF-10 | Grade semanal por Fast e slot, lida do Calendar | M | `/agenda` (ocupação do banco) + bloqueios via Apps Script (`APPS_SCRIPT_URL`) | 🟡 Calendar depende do endpoint da Fase 0 |
+| RF-10 | Grade semanal por Fast e slot, lida do Calendar | M | `/agenda` (ocupação do banco) + bloqueios do Google Calendar (`google-calendar.ts`, `intervalosParaBloqueios` testada; Apps Script como alternativa) | ✅ código; 🟡 aguarda conta de serviço (ADR-0006) |
 | RF-11 | Criar job com cliente, Fast, data, slot, analista, prazo, bloco de edição | M | `/agenda` → `criarJob` | ✅ |
 | RF-12 | Bloquear < 2h de folga e sinalizar à supervisora | M | `tg_job_validar` (P0003), `detectarConflitos()` no cliente, exceção registrada | ✅ |
 | RF-13 | Impedir agendamento duplo sem aprovação | M | `tg_job_validar` (P0002), `excecao_motivo` só para gestão | ✅ |
@@ -40,7 +40,7 @@ Legenda de situação: ✅ implementado · 🟡 parcial / depende de credencial 
 | RF-54 | Exportar para Power BI | S | schema `analytics` (views com `security_invoker`); instruções em `docs/arquitetura.md` | ✅ |
 | RF-60 | Notificar analista e Fast (WhatsApp, fallback push/e-mail) | M | fila `whatsapp_send`/`email_send`, `lib/integracoes` | 🟡 aguarda chip/credenciais |
 | RF-61 | Espelhar job no Notion | M | fila `notion_upsert`, `lib/integracoes/notion.ts` | 🟡 aguarda token |
-| RF-62 | Criar/atualizar eventos no Calendar do Fast | M | fila `calendar_upsert` → Apps Script | 🟡 aguarda endpoint |
+| RF-62 | Criar/atualizar eventos no Calendar do Fast | M | fila `calendar_upsert`/`calendar_delete` → Calendar API (conta de serviço, idempotente por `fmt_chave`; evento de edição em dia inteiro); Apps Script como alternativa | ✅ código; 🟡 aguarda conta de serviço (ADR-0006) |
 | RF-63 | Webhook autenticado para agendadores externos | C | `/api/integracoes/processar` com `CRON_SECRET` (padrão de assinatura) | ⏳ |
 
 ## Requisitos não funcionais

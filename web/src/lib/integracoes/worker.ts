@@ -5,6 +5,7 @@ import { espelharNotion } from "./notion";
 import { enviarWhatsapp } from "./whatsapp";
 import { enviarEmail } from "./email";
 import { chamarAppsScript } from "./apps-script";
+import { calendarDelete, calendarUpsert, googleCalendarConfigurado } from "./google-calendar";
 
 /**
  * RNF-08 — worker da outbox: idempotente (chave única), com fila e nova tentativa (backoff exponencial).
@@ -32,8 +33,9 @@ async function executar(item: ItemFila, ctx: Contexto): Promise<ResultadoIntegra
     case "notion_upsert": return espelharNotion(ctx);
     case "whatsapp_send": return enviarWhatsapp(ctx, payload.evento ?? "novo_job");
     case "email_send": return enviarEmail(ctx, payload.evento ?? "aviso");
-    case "calendar_upsert": return chamarAppsScript(ctx, "calendar_upsert");
-    case "calendar_delete": return chamarAppsScript(ctx, "calendar_delete");
+    // Calendar: API oficial com conta de serviço (ADR-0006) quando configurada; senão, Apps Script (decisão 7.1)
+    case "calendar_upsert": return googleCalendarConfigurado() ? calendarUpsert(ctx) : chamarAppsScript(ctx, "calendar_upsert");
+    case "calendar_delete": return googleCalendarConfigurado() ? calendarDelete(ctx) : chamarAppsScript(ctx, "calendar_delete");
     case "drive_verificar": return chamarAppsScript(ctx, "drive_verificar");
     case "push_send": return { ok: true, resultado: { ignorado: "push não implementado nesta fase" } };
     default: return { ok: false, erro: `tipo desconhecido ${item.tipo}`, descartar: true };

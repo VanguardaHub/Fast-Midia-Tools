@@ -2,6 +2,7 @@ import Link from "next/link";
 import { criarClienteServidor } from "@/lib/supabase/server";
 import { exigirGestao } from "@/lib/sessao";
 import { Mapa } from "@/components/mapa";
+import { AoVivo } from "@/components/ao-vivo";
 import { STATUS_ROTULO, fmtData, fmtHora, hojeISO } from "@/lib/formato";
 
 export const metadata = { title: "Mapa do dia" };
@@ -26,7 +27,7 @@ export default async function MapaPage(props: PageProps<"/mapa">) {
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Mapa do dia</h1>
-          <p className="text-sm text-muted">{fmtData(data, "EEEE, dd/MM/yyyy")} · consulta registrada na auditoria</p>
+          <p className="text-sm text-muted">{fmtData(data, "EEEE, dd/MM/yyyy")} · consulta registrada na auditoria · <AoVivo /></p>
         </div>
         <form className="flex gap-2">
           <input type="date" name="data" defaultValue={data} className="input" />
@@ -35,6 +36,7 @@ export default async function MapaPage(props: PageProps<"/mapa">) {
       </header>
       {error && <p className="rounded-xl bg-danger/10 p-3 text-sm text-danger">{error.message}</p>}
       <Mapa marcadores={marcadores} altura="60vh" zoom={12} />
+      <p className="text-xs text-muted">Posições exibidas são as dos eventos registrados pelo Fast (chegada, saída, corrida). Não há rastreamento contínuo (seção 4.2 do escopo, ADR-0003).</p>
       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {(linhas ?? []).map((l) => (
           <Link key={l.job_id} href={`/jobs/${l.job_id}`} className="card py-3 text-sm">

@@ -34,7 +34,7 @@ Legenda de situação: ✅ implementado · 🟡 parcial / depende de credencial 
 | RF-43 | Comparação destino × geofence com alerta | S | `tg_corrida_99_validar` (`divergencia_destino`), alerta `destino_divergente` | ✅ (destino_ponto quando informado) |
 | RF-44 | Gasto de 99 por Fast e por dia | M | `analytics.vw_gasto_99`, `vw_gasto_99_por_fast_dia`, `/indicadores` | ✅ |
 | RF-50 | Kanban por status | M | `/jobs` (Kanban) | ✅ |
-| RF-51 | Mapa do dia com último check-in | M | `/mapa`, RPC `mapa_do_dia` (auditada) | ✅ |
+| RF-51 | Mapa do dia com último check-in | M | `/mapa`, RPCs `mapa_do_dia` e `trajeto_do_dia` (auditadas por janela), `MapaAoVivo` (trilha, marcador animado, distância/ETA, seguir) | ✅ ampliado em 08/10 (ADR-0005 rev.) |
 | RF-52 | Alertas: atraso, fora da geofence, material 24h, comprovante | M | `gerar_alertas_periodicos()` + triggers; `/alertas` | ✅ |
 | RF-53 | Ajustar Fast e aprovar exceções com motivo | M | `AcoesJob`, `ExcecoesJob`, `decidir_excecao`, exceção `troca_fast` | ✅ |
 | RF-54 | Exportar para Power BI | S | schema `analytics` (views com `security_invoker`); instruções em `docs/arquitetura.md` | ✅ |

@@ -23,7 +23,7 @@ interface Props {
   altura?: string;
 }
 
-const ESTILO_OSM: StyleSpecification = {
+export const ESTILO_OSM: StyleSpecification = {
   version: 8,
   sources: {
     osm: {
@@ -36,7 +36,7 @@ const ESTILO_OSM: StyleSpecification = {
   layers: [{ id: "osm", type: "raster", source: "osm" }],
 };
 
-function circulo(lat: number, lng: number, raioM: number): Feature<Polygon> {
+export function circulo(lat: number, lng: number, raioM: number): Feature<Polygon> {
   const pontos = 48;
   const coords: [number, number][] = [];
   const kmLat = 110.574;

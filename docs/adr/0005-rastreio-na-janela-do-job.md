@@ -18,6 +18,15 @@ A supervisora precisa ver **onde o Fast está durante a gravação**, não apena
 7. **Novo termo de ciência 2.0** (vigente), com aceite obrigatório antes de qualquer captura. O termo 1.0 permanece no histórico de consentimentos.
 8. **Chave de desligamento**: `configuracao.rastreio_habilitado = false` desativa a captura no banco e oculta o componente no app, sem deploy.
 
+## Revisão de 08/10/2026 — Mapa do dia como app de corrida (trilha ao vivo)
+
+Pedido da gerência do projeto: acompanhar o trajeto do Fast em tempo real, como nos apps Uber/99. Não há coleta nova: o mapa passa a exibir a **trilha** (chegada → posições → saída) que a decisão 1 já captura, dentro da mesma janela, frequência e retenção. Implementação:
+
+1. Nova RPC `trajeto_do_dia(p_data)` (migração 0016), só para gestão, auditada na **mesma janela** de `mapa_do_dia` e sob a mesma entidade, de modo que a transparência ao Fast ("quem consultou minha posição") continue íntegra e sem duplicar registros.
+2. Componente `MapaAoVivo`: linha da trilha por Fast (cor do cadastro), marcador animado entre posições com seta de rumo e pulso quando "ao vivo", pino e geofence do cliente, cartões com situação (ao vivo / sem sinal / no local / saiu), distância ao cliente, chegada estimada e percorrido, modo "seguir" e "visão geral".
+3. **Distância e ETA são calculadas em linha reta no próprio app** (`lib/rastreio.ts`), sem enviar posições a serviços de rotas externos (minimização; nenhum novo operador de dados). A estimativa é indicativa e vem rotulada com "~".
+4. O Realtime continua o mesmo (toque em `job.atualizado_em` a cada posição); o cliente apenas anima a diferença entre duas cargas.
+
 ## Consequências
 
 - O RF-38 passa de prioridade C para implementado; o RNF-04 (minimização) é preservado por janela, frequência, retenção e ausência de captura em segundo plano.

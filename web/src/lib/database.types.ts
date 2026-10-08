@@ -209,6 +209,10 @@ export type Database = {
         Args: { p_data?: string };
         Returns: { capturado_em: string; cliente: string; codigo: number; cor: string; dentro_geofence: boolean; fast_id: string; fast_nome: string; job_id: string; job_lat: number; job_lng: number; lat: number; lng: number; precisao_m: number; raio_geofence_m: number; status: Database["public"]["Enums"]["job_status"]; tipo: Database["public"]["Enums"]["evento_localizacao_tipo"] }[];
       };
+      trajeto_do_dia: {
+        Args: { p_data?: string };
+        Returns: { capturado_em: string; dentro_geofence: boolean | null; fast_id: string; job_id: string; lat: number; lng: number; precisao_m: number; tipo: Database["public"]["Enums"]["evento_localizacao_tipo"] }[];
+      };
       marcar_material_entregue: { Args: { p_job_id: string }; Returns: undefined };
       minhas_consultas_posicao: { Args: { p_limite?: number }; Returns: { criado_em: string; usuario_email: string | null; entidade: string; referencia: string | null }[] };
       registrar_primeiro_acesso: { Args: Record<string, never>; Returns: undefined };

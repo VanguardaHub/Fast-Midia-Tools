@@ -74,7 +74,7 @@ Ordem dos elementos: faixa `--brand` no topo do cartão → ícone + nome do app
 
 - O botão Google aparece quando `NEXT_PUBLIC_AUTH_GOOGLE=true` (ativado em 08/10/2026). O fluxo é `signInWithOAuth` do Supabase Auth com `prompt=select_account`; o retorno passa por `/auth/callback`.
 - Quem pode entrar pelo Google: e-mails do domínio `vanguardamartech.com.br`, convidados em Cadastros → Acessos ou cadastrados como Fast (`email_calendario`). Qualquer outro e-mail é recusado pelo banco (gatilho `auth_usuario_validar`) e a tela mostra "Este e-mail não está autorizado…".
-- Pré-requisitos de infraestrutura (feitos): provedor Google habilitado no Supabase Auth com o cliente OAuth `38179161838-…`; URI `https://wcidhqxkoltwfrlairqj.supabase.co/auth/v1/callback` autorizado no Google Cloud.
+- Pré-requisitos de infraestrutura: provedor Google habilitado no Supabase Auth com o cliente OAuth `38179161838-…` (feito) e o URI `https://wcidhqxkoltwfrlairqj.supabase.co/auth/v1/callback` na lista de **URIs de redirecionamento autorizados** desse cliente no Google Cloud (pendente em 08/10: sem ele o Google devolve `redirect_uri_mismatch`). Observação: o cliente tem dois URIs distintos, um para o login (Supabase) e outro para as integrações (`…vercel.app/api/google/callback`).
 
 ## 6. Ícones e PWA
 

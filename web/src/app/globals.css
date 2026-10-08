@@ -94,3 +94,15 @@ html, body {
 
 :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .input:focus { box-shadow: 0 0 0 3px var(--ring); }
+
+/* Mapa do dia ao vivo (RF-51): marcador do Fast com pulso e seta de rumo; pino do job */
+.fmt-fast { position: relative; display: grid; place-items: center; width: 44px; height: 44px; --cor: var(--brand); }
+.fmt-fast-ponto { z-index: 2; width: 18px; height: 18px; border-radius: 9999px; background: var(--cor); border: 3px solid #fff; box-shadow: 0 1px 6px rgba(0, 0, 0, 0.45); }
+.fmt-fast-pulso { position: absolute; inset: 0; border-radius: 9999px; background: var(--cor); opacity: 0.35; animation: fmt-pulso 2s ease-out infinite; }
+.fmt-fast[data-ao-vivo="false"] .fmt-fast-pulso { display: none; }
+.fmt-fast-seta { position: absolute; z-index: 1; top: 1px; width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 13px solid var(--cor); transform-origin: 50% 21px; transform: rotate(var(--rumo, 0deg)); filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.4)); }
+.fmt-fast[data-rumo="false"] .fmt-fast-seta { display: none; }
+.fmt-fast[data-selecionado="true"] .fmt-fast-ponto { width: 22px; height: 22px; border-width: 4px; }
+.fmt-job { filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4)); }
+@keyframes fmt-pulso { 0% { transform: scale(0.35); opacity: 0.55; } 100% { transform: scale(1.25); opacity: 0; } }
+.fmt-mapa-vivo .maplibregl-ctrl-top-right { top: 5.25rem !important; }

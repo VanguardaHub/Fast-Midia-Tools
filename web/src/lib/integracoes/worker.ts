@@ -6,6 +6,7 @@ import { enviarWhatsapp } from "./whatsapp";
 import { enviarEmail } from "./email";
 import { chamarAppsScript } from "./apps-script";
 import { calendarDelete, calendarUpsert, googleCalendarConfigurado } from "./google-calendar";
+import { driveVerificar, googleDriveConfigurado } from "./google-drive";
 
 /**
  * RNF-08 — worker da outbox: idempotente (chave única), com fila e nova tentativa (backoff exponencial).
@@ -31,12 +32,22 @@ async function executar(item: ItemFila, ctx: Contexto): Promise<ResultadoIntegra
   const payload = item.payload as { evento?: string };
   switch (item.tipo) {
     case "notion_upsert": return espelharNotion(ctx);
-    case "whatsapp_send": return enviarWhatsapp(ctx, payload.evento ?? "novo_job");
+    case "whatsapp_send": {
+      // Novo job: a mensagem leva o link da pasta de ingest; se o Drive está integrado e a pasta ainda não
+      // existe, adia até 3 tentativas (backoff da fila) para não mandar "pasta ainda não criada" à toa.
+      const evento = payload.evento ?? "novo_job";
+      const driveIntegrado = googleDriveConfigurado() || Boolean(process.env.APPS_SCRIPT_URL && process.env.APPS_SCRIPT_TOKEN);
+      if (evento === "novo_job" && driveIntegrado && ctx.job.cliente?.pasta_drive_id && !ctx.job.pasta_ingest_url && item.tentativas < 3) {
+        return { ok: false, erro: "aguardando a pasta de ingest (drive_verificar) para enviar o WhatsApp com o link" };
+      }
+      return enviarWhatsapp(ctx, evento);
+    }
     case "email_send": return enviarEmail(ctx, payload.evento ?? "aviso");
     // Calendar: API oficial com conta de serviço (ADR-0006) quando configurada; senão, Apps Script (decisão 7.1)
     case "calendar_upsert": return googleCalendarConfigurado() ? calendarUpsert(ctx) : chamarAppsScript(ctx, "calendar_upsert");
     case "calendar_delete": return googleCalendarConfigurado() ? calendarDelete(ctx) : chamarAppsScript(ctx, "calendar_delete");
-    case "drive_verificar": return chamarAppsScript(ctx, "drive_verificar");
+    // Drive: API oficial com a conta de serviço quando configurada; senão, Apps Script (decisão 7.1)
+    case "drive_verificar": return googleDriveConfigurado() ? driveVerificar(ctx) : chamarAppsScript(ctx, "drive_verificar");
     case "push_send": return { ok: true, resultado: { ignorado: "push não implementado nesta fase" } };
     default: return { ok: false, erro: `tipo desconhecido ${item.tipo}`, descartar: true };
   }

@@ -8,11 +8,13 @@ import type { ConflitoAgenda } from "@/lib/regras";
 
 type Slot = "manha" | "tarde";
 
-export function NovoJobForm({ selecao, fast, clientes, conflitos, ehGestao, onFechar }: {
+export function NovoJobForm({ selecao, fast, clientes, conflitos, indisponivel, ehGestao, onFechar }: {
   selecao: { fastId: string; data: string; slot: Slot };
   fast: { id: string; nome: string; cor: string };
   clientes: { id: string; nome: string; grupo: string | null }[];
   conflitos: ConflitoAgenda[];
+  /** RF-10 — o Fast marcou este dia/turno como indisponível; só gestão agenda, com motivo */
+  indisponivel?: { motivo: string | null; diaInteiro: boolean };
   ehGestao: boolean;
   onFechar: () => void;
 }) {
@@ -28,7 +30,7 @@ export function NovoJobForm({ selecao, fast, clientes, conflitos, ehGestao, onFe
   const [motivo, setMotivo] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [pendente, iniciar] = useTransition();
-  const temConflito = conflitos.length > 0;
+  const temConflito = conflitos.length > 0 || Boolean(indisponivel);
 
   function enviar(e: React.FormEvent) {
     e.preventDefault();
@@ -75,6 +77,9 @@ export function NovoJobForm({ selecao, fast, clientes, conflitos, ehGestao, onFe
           <div className="rounded-xl bg-warning/10 p-3 text-sm text-warning">
             <p className="font-medium">Conflito com as regras de agenda (Processos 1.2):</p>
             <ul className="list-disc pl-5">
+              {indisponivel && (
+                <li>O Fast informou indisponibilidade neste {indisponivel.diaInteiro ? "dia inteiro" : "turno"}{indisponivel.motivo ? ` (${indisponivel.motivo})` : ""}</li>
+              )}
               {conflitos.map((c, i) => (
                 <li key={i}>{c.tipo === "agendamento_duplo" ? "Agendamento duplo no mesmo dia" : "Menos de 2h de folga"} — job existente em {fmtData(c.jobConflitante.data, "dd/MM")} ({SLOT_ROTULO[c.jobConflitante.slot]})</li>
               ))}

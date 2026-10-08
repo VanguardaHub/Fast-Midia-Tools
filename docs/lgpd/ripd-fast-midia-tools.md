@@ -58,6 +58,9 @@ Tratamento de **dados de geolocalização de colaboradores** (dado pessoal com p
 | Consentimento e ciência | versão do termo, data/hora, user agent | Fasts | II/IX (comprovação de transparência) | enquanto houver vínculo + 5 anos | `consentimento`, `termo_ciencia` |
 | Auditoria | quem alterou o quê, quem consultou posição de quem, quando | usuários internos | IX (segurança e responsabilização) | 5 anos | `auditoria` |
 | Contato de cliente | nome e WhatsApp do contato | contato do cliente | IX (relação comercial) | enquanto ativo | `cliente` |
+| Indisponibilidade (08/10) | dia, turno e motivo **opcional** informados pelo Fast | Fasts | V (organização da prestação) | enquanto houver contrato; o Fast remove quando quiser | `indisponibilidade` |
+
+> Revisão de 08/10/2026: a leitura do Google Calendar pessoal dos Fasts foi retirada do escopo (ADR-0006, revisão). O Calendar permanece apenas como espelho de escrita dos jobs, opcional. Isso elimina o acesso a compromissos pessoais e reduz o tratamento. O campo "motivo" da indisponibilidade é opcional justamente para não induzir o Fast a informar dados de saúde ou familiares.
 
 **Não há** tratamento de dados sensíveis (art. 5º, II), de crianças/adolescentes, nem decisões automatizadas com efeito jurídico (art. 20). A geometria bruta nunca entra nas views analíticas nem na trilha de auditoria.
 

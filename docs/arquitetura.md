@@ -99,10 +99,9 @@ Conectar ao Postgres do Supabase (host `db.wcidhqxkoltwfrlairqj.supabase.co`, po
 |---|---|---|
 | `calendar_upsert` | `fast_email, data, slot, inicio, fim, data_edicao, bloco_edicao, calendar_event_id?` | `{ ok, calendar_event_id, calendar_event_edicao_id? }` |
 | `calendar_delete` | `calendar_event_id, calendar_event_edicao_id` | `{ ok }` |
-| `drive_verificar` | `cliente, cliente_pasta_id?, cliente_grupo?, data` | `{ ok, pasta_ingest_url?, status: 'encontrado'\|'grupo'\|'nao_encontrado' }` |
-| `GET ?acao=disponibilidade&inicio&fim&token` | — | `{ bloqueios: [{ fast_email, data, slot }] }` |
+| `drive_verificar` | `cliente, cliente_pasta_id (obrigatório), cliente_grupo?, data` | `{ ok, pasta_ingest_url? }` |
 
-O Apps Script deve ser publicado com `access: DOMAIN` e validar o `token` (PropertiesService), conforme Fase 0.
+O Apps Script deve ser publicado com `access: DOMAIN` e validar o `token` (PropertiesService), conforme Fase 0. **Desde 08/10/2026 é alternativa**: Calendar (espelho) e Drive (pasta de ingest) funcionam pela API oficial com a conta de serviço (ADR-0006, revisão; detalhes em `docs/integracoes/google-calendar-e-drive.md`). A ação `disponibilidade` foi retirada: a agenda não lê mais o calendário pessoal dos Fasts.
 
 ## Operação
 

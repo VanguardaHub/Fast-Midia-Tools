@@ -9,13 +9,13 @@ Legenda de situação: ✅ implementado · 🟡 parcial / depende de credencial 
 | RF-01 | Login corporativo e sessão com expiração | M | Supabase Auth (magic link, senha, Google OAuth preparado); trigger `tg_auth_usuario_validar` (domínio/convite); `proxy.ts` | ✅ (Google OAuth aguarda decisão 3) |
 | RF-02 | Perfis Fast/Analista/Supervisora/Admin com RLS | M | `perfil`, políticas em 0004/0006, `auth_perfil()` | ✅ |
 | RF-03 | Cadastro de Fasts por interface | M | `/cadastros/fasts` (criar, editar, vincular conta, desativar, excluir sem jobs), `/cadastros/clientes`, `/cadastros/acessos` (nome, telefone, perfil, status) | ✅ |
-| RF-10 | Grade semanal por Fast e slot, lida do Calendar | M | `/agenda` (ocupação do banco) + bloqueios do Google Calendar (`google-calendar.ts`, `intervalosParaBloqueios` testada; Apps Script como alternativa) | ✅ código; 🟡 aguarda conta de serviço (ADR-0006) |
+| RF-10 | Grade semanal por Fast e slot (reinterpretado em 08/10: lida do sistema, não do Calendar) | M | `/agenda` (ocupação do banco) + `indisponibilidade` informada pelo Fast (`MinhaDisponibilidade`, triggers P0014/P0015, migração 0014) | ✅ |
 | RF-11 | Criar job com cliente, Fast, data, slot, analista, prazo, bloco de edição | M | `/agenda` → `criarJob` | ✅ |
 | RF-12 | Bloquear < 2h de folga e sinalizar à supervisora | M | `tg_job_validar` (P0003), `detectarConflitos()` no cliente, exceção registrada | ✅ |
 | RF-13 | Impedir agendamento duplo sem aprovação | M | `tg_job_validar` (P0002), `excecao_motivo` só para gestão | ✅ |
 | RF-14 | Bloqueio atômico do slot | M | índice único parcial `job_slot_unico` + exclusão GiST `job_sem_sobreposicao` | ✅ |
 | RF-15 | Cancelar e reagendar, liberando calendário e notificando | M | `cancelar_job`, `atualizarJob`; fila `calendar_delete`/`calendar_upsert`/`whatsapp_send` | ✅ (entrega depende de credenciais) |
-| RF-16 | Verificar/criar pasta do cliente no Drive | M | fila `drive_verificar` → Apps Script; `cliente.pasta_drive_*` | 🟡 |
+| RF-16 | Verificar/criar pasta do cliente no Drive | M | fila `drive_verificar` → Drive API (`google-drive.ts`, estrutura `drive-estrutura.ts` testada; Apps Script alternativo); `cliente.pasta_drive_id` obrigatório | ✅ código; 🟡 aguarda conta de serviço e IDs das pastas |
 | RF-20 | Briefing dentro do app | M | `/jobs/[id]` (BriefingForm), tabela `briefing`, bucket `referencias-briefing` | ✅ |
 | RF-21 | Impedir check-in sem briefing | M | `tg_evento_localizacao_validar` (P0007) | ✅ |
 | RF-22 | Alerta de briefing não recebido até D−1 | S | `gerar_alertas_periodicos()` → `briefing_atrasado` | ✅ |

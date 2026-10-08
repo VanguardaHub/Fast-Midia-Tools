@@ -181,6 +181,8 @@ export function traduzirErro(mensagem: string | undefined | null): string {
     [/RASTREIO_FORA_DA_GRAVACAO/, "A posição só é compartilhada entre a chegada e a saída do job."],
     [/BAIXA_PRECISAO_SEM_JUSTIFICATIVA/, "Precisão do GPS insuficiente. Informe uma justificativa."],
     [/FORA_GEOFENCE_SEM_JUSTIFICATIVA/, "Você está fora da geofence do job. Informe uma justificativa."],
+    [/FAST_INDISPONIVEL/, "O Fast informou que não pode gravar neste dia/turno. Apenas a supervisora pode agendar mesmo assim, informando o motivo."],
+    [/JOB_JA_AGENDADO/, "Já existe um job neste dia/turno. Peça à supervisão para reagendar antes de marcar indisponibilidade."],
     [/job_slot_unico|job_sem_sobreposicao/, "Este slot acabou de ser ocupado por outro agendamento. Atualize a agenda."],
     [/EMAIL_NAO_AUTORIZADO/, "E-mail fora do domínio corporativo e sem convite."],
     [/SEM_PERMISSAO/, "Você não tem permissão para esta ação."],

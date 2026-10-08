@@ -130,6 +130,14 @@ export type Database = {
           { foreignKeyName: "excecao_solicitada_por_fkey"; columns: ["solicitada_por"]; isOneToOne: false; referencedRelation: "perfil"; referencedColumns: ["id"] },
         ];
       };
+      indisponibilidade: {
+        Row: { criado_em: string; criado_por: string | null; data: string; fast_id: string; id: string; motivo: string | null; slot: Database["public"]["Enums"]["slot_tipo"] | null };
+        Insert: { criado_em?: string; criado_por?: string | null; data: string; fast_id: string; id?: string; motivo?: string | null; slot?: Database["public"]["Enums"]["slot_tipo"] | null };
+        Update: { criado_em?: string; criado_por?: string | null; data?: string; fast_id?: string; id?: string; motivo?: string | null; slot?: Database["public"]["Enums"]["slot_tipo"] | null };
+        Relationships: [
+          { foreignKeyName: "indisponibilidade_fast_id_fkey"; columns: ["fast_id"]; isOneToOne: false; referencedRelation: "fast"; referencedColumns: ["id"] },
+        ];
+      };
       fast: {
         Row: { ativo: boolean; atualizado_em: string; cor: string; criado_em: string; email_calendario: string; id: string; nome: string; nome_notion: string | null; perfil_id: string | null; telefone: string | null };
         Insert: { ativo?: boolean; atualizado_em?: string; cor?: string; criado_em?: string; email_calendario: string; id?: string; nome: string; nome_notion?: string | null; perfil_id?: string | null; telefone?: string | null };

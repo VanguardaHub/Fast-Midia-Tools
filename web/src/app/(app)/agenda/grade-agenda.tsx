@@ -7,17 +7,32 @@ import { ptBR } from "date-fns/locale";
 import { SLOT_ROTULO, STATUS_COR } from "@/lib/formato";
 import { detectarConflitos } from "@/lib/regras";
 import { NovoJobForm } from "./novo-job-form";
+import { useRouter } from "next/navigation";
+import { removerIndisponibilidade } from "@/lib/actions/disponibilidade";
 
 type Slot = "manha" | "tarde";
-interface Fast { id: string; nome: string; cor: string; email_calendario?: string }
+interface Fast { id: string; nome: string; cor: string }
+interface Indisponibilidade { id: string; fast_id: string; data: string; slot: Slot | null; motivo: string | null }
 interface JobResumo { id: string; codigo: number; fast_id: string; data: string; slot: Slot; status: string; cliente: string }
 interface Cliente { id: string; nome: string; grupo: string | null }
 
-export function GradeAgenda({ dias, fasts, jobs, clientes, bloqueios, ehGestao }: {
+export function GradeAgenda({ dias, fasts, jobs, clientes, indisponibilidades, ehGestao }: {
   dias: string[]; fasts: Fast[]; jobs: JobResumo[]; clientes: Cliente[];
-  bloqueios: { fast_email: string; data: string; slot: Slot }[]; ehGestao: boolean;
+  indisponibilidades: Indisponibilidade[]; ehGestao: boolean;
 }) {
-  const [selecao, setSelecao] = useState<{ fastId: string; data: string; slot: Slot } | null>(null);
+  const router = useRouter();
+  const [selecao, setSelecao] = useState<{ fastId: string; data: string; slot: Slot; indisponivel?: Indisponibilidade } | null>(null);
+
+  /** RF-10 — gestão clica num slot indisponível: remove a marcação ou agenda mesmo assim (com motivo). */
+  function abrirIndisponivel(fastId: string, data: string, slot: Slot, ind: Indisponibilidade) {
+    if (!ehGestao) return;
+    const remover = confirm(`O Fast marcou este ${ind.slot ? "turno" : "dia"} como indisponível${ind.motivo ? ` (${ind.motivo})` : ""}.\n\nOK = remover a indisponibilidade\nCancelar = agendar mesmo assim, informando o motivo`);
+    if (remover) {
+      removerIndisponibilidade(ind.id).then((r) => { if (!r.ok) alert(r.erro); router.refresh(); });
+      return;
+    }
+    setSelecao({ fastId, data, slot, indisponivel: ind });
+  }
   const mapa = useMemo(() => {
     const m = new Map<string, JobResumo>();
     for (const j of jobs) m.set(`${j.fast_id}|${j.data}|${j.slot}`, j);
@@ -55,7 +70,8 @@ export function GradeAgenda({ dias, fasts, jobs, clientes, bloqueios, ehGestao }
                     <div className="grid gap-1">
                       {(["manha", "tarde"] as Slot[]).map((slot) => {
                         const j = mapa.get(`${f.id}|${d}|${slot}`);
-                        const bloqueado = bloqueios.some((b) => b.data === d && b.slot === slot && b.fast_email.toLowerCase() === (f.email_calendario ?? "").toLowerCase());
+                        const ind = indisponibilidades.find((b) => b.fast_id === f.id && b.data === d && (b.slot === null || b.slot === slot));
+                        const bloqueado = Boolean(ind);
                         if (j) {
                           return (
                             <Link key={slot} href={`/jobs/${j.id}`} className={`block truncate rounded-lg px-2 py-1.5 text-xs ${STATUS_COR[j.status as keyof typeof STATUS_COR]}`} title={`${j.cliente} · ${SLOT_ROTULO[slot]}`}>
@@ -66,12 +82,12 @@ export function GradeAgenda({ dias, fasts, jobs, clientes, bloqueios, ehGestao }
                         return (
                           <button
                             key={slot}
-                            disabled={bloqueado}
-                            title={bloqueado ? "Ocupado no Google Calendar do Fast" : `Agendar ${SLOT_ROTULO[slot]}`}
-                            onClick={() => setSelecao({ fastId: f.id, data: d, slot })}
+                            disabled={bloqueado && !ehGestao}
+                            title={bloqueado ? `Fast indisponível${ind?.motivo ? `: ${ind.motivo}` : ""}${ehGestao ? " — clique para remover ou agendar com motivo" : ""}` : `Agendar ${SLOT_ROTULO[slot]}`}
+                            onClick={() => (bloqueado && ind ? abrirIndisponivel(f.id, d, slot, ind) : setSelecao({ fastId: f.id, data: d, slot }))}
                             className={`rounded-lg border px-2 py-1.5 text-left text-xs ${bloqueado ? "border-warning/40 bg-warning/10 text-warning" : "border-dashed border-border text-muted hover:border-primary hover:text-primary"} disabled:opacity-70`}
                           >
-                            {slot === "manha" ? "Manhã" : "Tarde"} · {bloqueado ? "ocupado (Calendar)" : "livre"}
+                            {slot === "manha" ? "Manhã" : "Tarde"} · {bloqueado ? "indisponível" : "livre"}
                           </button>
                         );
                       })}
@@ -93,6 +109,7 @@ export function GradeAgenda({ dias, fasts, jobs, clientes, bloqueios, ehGestao }
           fast={fasts.find((f) => f.id === selecao.fastId)!}
           clientes={clientes}
           conflitos={conflitosSelecao}
+          indisponivel={selecao.indisponivel ? { motivo: selecao.indisponivel.motivo, diaInteiro: selecao.indisponivel.slot === null } : undefined}
           ehGestao={ehGestao}
           onFechar={() => setSelecao(null)}
         />

@@ -13,6 +13,14 @@
 4. **Bloqueios (RF-10)**: função pura `intervalosParaBloqueios` converte compromissos em `Fast × dia × slot` no fuso operacional (`FMT_TIMEZONE`, padrão America/Manaus), ignorando eventos criados pelo próprio app, eventos marcados como "livre" e recusados; eventos de dia inteiro bloqueiam os dois slots. Coberta por testes unitários.
 5. **Degradação graciosa**: falha de credencial em um Fast não derruba a agenda (sem bloqueios para ele); a fila reprocessa com backoff (ADR-0004).
 
+## Revisão de 08/10/2026 — escopo reduzido a espelho opcional; Drive incluído
+
+Decisão da gerência do projeto ao revisar a integração à luz da agenda própria:
+
+1. **A leitura de compromissos do Google Calendar pessoal do Fast sai do escopo.** A agenda do sistema é a fonte da verdade; o que faltava era o Fast avisar quando não pode gravar. Isso passou a ser feito **no app** (tabela `indisponibilidade`, migração 0014): o Fast marca dia ou turno em "Hoje → Minha disponibilidade", a agenda mostra "indisponível" e o banco recusa job no slot (gestão aprova com motivo, como nos demais conflitos). Motivo é opcional, por minimização (RIPD). Removidos `carregarBloqueiosGoogle` e o adaptador de bloqueios; RF-10 reinterpretado como "grade lida do sistema".
+2. **A escrita do job no Calendar (RF-62) permanece como espelho opcional**: lembrete nativo no celular do Fast, ligado apenas quando a conta de serviço existir; sem ela nada muda.
+3. **Drive pela mesma conta de serviço** (`google-drive.ts`): a pasta de ingest `!INSTITUCIONAL/BANCO DE IMAGENS/MM NOME/DD-MM` (e `VÍDEOS/...`) é garantida a partir do **ID da pasta do cliente**, criando só o que falta; estrutura configurável por `DRIVE_ESTRUTURA`. Em Drives compartilhados do Workspace, impersonar um usuário com acesso (`GOOGLE_DRIVE_IMPERSONAR`, escopo `drive`). O WhatsApp de novo job aguarda a pasta existir (até 3 tentativas) para enviar o link certo. Apps Script continua como alternativa para ambos.
+
 ## Consequências
 
 - Passa a existir uma credencial de longa duração (chave da conta de serviço) no Vercel: rotacionar a cada 90 dias e restringir a delegação ao escopo `calendar`.

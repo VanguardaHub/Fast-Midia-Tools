@@ -1,6 +1,5 @@
 import { createSign } from "node:crypto";
 import type { Contexto, ResultadoIntegracao } from "./tipos";
-import { intervalosParaBloqueios, type Bloqueio, type IntervaloOcupado, type JanelaSlots, SLOTS_PADRAO } from "./calendario-bloqueios";
 
 /**
  * RF-10 / RF-62 — Google Calendar pela API oficial, com conta de serviço (ADR-0006).
@@ -40,18 +39,18 @@ export function modoCalendar(): "impersonar" | "compartilhado" {
 
 const cacheToken = new Map<string, { token: string; expira: number }>();
 
-/** Token OAuth 2.0 por JWT assinado (RS256); `sub` = usuário a impersonar (delegação em todo o domínio). */
-export async function obterToken(sub?: string): Promise<string> {
+/** Token OAuth 2.0 por JWT assinado (RS256); `sub` = usuário a impersonar (delegação em todo o domínio); `escopo` padrão Calendar. */
+export async function obterToken(sub?: string, escopo: string = ESCOPO): Promise<string> {
   const sa = lerContaServico();
   if (!sa) throw new Error("GOOGLE_SERVICE_ACCOUNT_JSON não configurada");
-  const chave = sub ?? "__sa__";
+  const chave = `${escopo}|${sub ?? "__sa__"}`;
   const agora = Math.floor(Date.now() / 1000);
   const emCache = cacheToken.get(chave);
   if (emCache && emCache.expira > agora + 60) return emCache.token;
 
   const b64 = (o: unknown) => Buffer.from(JSON.stringify(o)).toString("base64url");
   const cabecalho = b64({ alg: "RS256", typ: "JWT" });
-  const corpo = b64({ iss: sa.client_email, scope: ESCOPO, aud: sa.token_uri ?? "https://oauth2.googleapis.com/token", iat: agora, exp: agora + 3600, ...(sub ? { sub } : {}) });
+  const corpo = b64({ iss: sa.client_email, scope: escopo, aud: sa.token_uri ?? "https://oauth2.googleapis.com/token", iat: agora, exp: agora + 3600, ...(sub ? { sub } : {}) });
   const assinatura = createSign("RSA-SHA256").update(`${cabecalho}.${corpo}`).sign(sa.private_key, "base64url");
   const r = await fetch(sa.token_uri ?? "https://oauth2.googleapis.com/token", {
     method: "POST",
@@ -172,59 +171,3 @@ export async function calendarDelete(ctx: Contexto): Promise<ResultadoIntegracao
   return { ok: true, resultado: { excluidos: [j.calendar_event_id, j.calendar_event_edicao_id].filter(Boolean) }, patchJob: { calendar_event_id: null, calendar_event_edicao_id: null } };
 }
 
-interface EventoLista {
-  id: string; status?: string; transparency?: string;
-  start?: { dateTime?: string; date?: string }; end?: { dateTime?: string; date?: string };
-  extendedProperties?: { private?: Record<string, string> };
-  attendees?: { email?: string; self?: boolean; responseStatus?: string }[];
-}
-
-/**
- * RF-10 — bloqueios externos: eventos do Google Calendar do Fast (ou do calendário compartilhado) que ocupam
- * um slot da semana. Ignora eventos criados pelo próprio app, eventos "livre" (transparent) e recusados.
- */
-export async function carregarBloqueiosGoogle(fasts: { email: string }[], inicio: string, fim: string, slots: JanelaSlots = SLOTS_PADRAO): Promise<Bloqueio[]> {
-  const dias: string[] = [];
-  for (let t = Date.parse(`${inicio}T00:00:00Z`); t <= Date.parse(`${fim}T00:00:00Z`); t += 86_400_000) dias.push(new Date(t).toISOString().slice(0, 10));
-  const timeMin = new Date(Date.parse(`${inicio}T00:00:00Z`) - 12 * 3_600_000).toISOString();
-  const timeMax = new Date(Date.parse(`${fim}T00:00:00Z`) + 36 * 3_600_000).toISOString();
-  const intervalos: IntervaloOcupado[] = [];
-
-  const listar = async (token: string, calendarId: string) => {
-    const q = new URLSearchParams({ timeMin, timeMax, singleEvents: "true", maxResults: "250", orderBy: "startTime" });
-    const r = await gapi<{ items?: EventoLista[] }>(token, `/calendars/${encodeURIComponent(calendarId)}/events?${q}`);
-    return r.status < 300 ? (r.body.items ?? []) : [];
-  };
-  const usar = (e: EventoLista) => e.status !== "cancelled" && e.transparency !== "transparent" && !e.extendedProperties?.private?.fmt_job_id;
-
-  if (modoCalendar() === "compartilhado") {
-    const eventos = await listar(await obterToken(), process.env.GOOGLE_CALENDAR_ID!);
-    for (const e of eventos) {
-      if (!usar(e)) continue;
-      for (const a of e.attendees ?? []) {
-        if (!a.email || a.responseStatus === "declined") continue;
-        if (!fasts.some((f) => f.email.toLowerCase() === a.email!.toLowerCase())) continue;
-        intervalos.push(paraIntervalo(a.email, e));
-      }
-    }
-  } else {
-    await Promise.all(fasts.map(async (f) => {
-      try {
-        const eventos = await listar(await obterToken(f.email), "primary");
-        for (const e of eventos) {
-          if (!usar(e)) continue;
-          if (e.attendees?.some((a) => a.self && a.responseStatus === "declined")) continue;
-          intervalos.push(paraIntervalo(f.email, e));
-        }
-      } catch {
-        // Fast sem delegação/permissão: sem bloqueios para ele, agenda continua operando
-      }
-    }));
-  }
-  return intervalosParaBloqueios(intervalos, dias, slots, fuso());
-}
-
-function paraIntervalo(email: string, e: EventoLista): IntervaloOcupado {
-  if (e.start?.date) return { fastEmail: email, inicio: e.start.date, fim: e.end?.date ?? e.start.date, diaInteiro: true };
-  return { fastEmail: email, inicio: e.start?.dateTime ?? "", fim: e.end?.dateTime ?? "" };
-}

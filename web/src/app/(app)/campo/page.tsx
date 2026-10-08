@@ -6,6 +6,7 @@ import { StatusBadge } from "@/components/status-badge";
 import { SLOT_ROTULO, fmtData, hojeISO } from "@/lib/formato";
 import { SincronizarOffline } from "./sincronizar-offline";
 import { AoVivo } from "@/components/ao-vivo";
+import { MinhaDisponibilidade } from "./minha-disponibilidade";
 
 export const metadata = { title: "Jobs de hoje" };
 
@@ -32,6 +33,9 @@ export default async function CampoPage() {
     .order("inicio")
     .limit(30);
 
+  const { data: indisponibilidades } = s.fastId
+    ? await supabase.from("indisponibilidade").select("id, data, slot, motivo").eq("fast_id", s.fastId).gte("data", hoje).order("data").limit(30)
+    : { data: [] as { id: string; data: string; slot: "manha" | "tarde" | null; motivo: string | null }[] };
   const deHoje = (jobs ?? []).filter((j) => j.data === hoje);
   const proximos = (jobs ?? []).filter((j) => j.data > hoje);
 
@@ -70,6 +74,8 @@ export default async function CampoPage() {
           ))}
         </ul>
       )}
+
+      {s.fastId && <MinhaDisponibilidade itens={indisponibilidades ?? []} />}
 
       {proximos.length > 0 && (
         <section>

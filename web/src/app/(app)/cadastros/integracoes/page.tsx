@@ -11,7 +11,8 @@ export default async function IntegracoesPage() {
   await exigirGestao();
   const configuradas = {
     [`Google Calendar (API${process.env.GOOGLE_CALENDAR_ID ? ", calendário compartilhado" : ", conta de serviço"})`]: googleCalendarConfigurado(),
-    "Apps Script (Drive; Calendar alternativo)": Boolean(process.env.APPS_SCRIPT_URL && process.env.APPS_SCRIPT_TOKEN),
+    [`Google Drive (API${process.env.GOOGLE_DRIVE_IMPERSONAR ? ", impersonando usuário" : ", conta de serviço"})`]: googleCalendarConfigurado(),
+    "Apps Script (alternativa para Calendar/Drive)": Boolean(process.env.APPS_SCRIPT_URL && process.env.APPS_SCRIPT_TOKEN),
     "Notion (espelho)": Boolean(process.env.NOTION_TOKEN && process.env.NOTION_DATABASE_ID),
     "WhatsApp Cloud API": Boolean(process.env.WHATSAPP_ACCESS_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID),
     "E-mail (Resend)": Boolean(process.env.RESEND_API_KEY),

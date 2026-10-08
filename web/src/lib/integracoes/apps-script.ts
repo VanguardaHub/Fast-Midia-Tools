@@ -6,6 +6,14 @@ import type { Contexto, ResultadoIntegracao } from "./tipos";
  *   POST { token, acao: 'calendar_upsert' | 'calendar_delete' | 'drive_verificar', job: {...} }
  *   → { ok, calendar_event_id?, calendar_event_edicao_id?, pasta_ingest_url?, status? }
  */
+function horaLocal(iso: string): string {
+  try {
+    return new Intl.DateTimeFormat("pt-BR", { timeZone: process.env.FMT_TIMEZONE ?? "America/Manaus", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(iso));
+  } catch {
+    return "";
+  }
+}
+
 export async function chamarAppsScript(ctx: Contexto, acao: "calendar_upsert" | "calendar_delete" | "drive_verificar"): Promise<ResultadoIntegracao> {
   const url = process.env.APPS_SCRIPT_URL;
   const token = process.env.APPS_SCRIPT_TOKEN;
@@ -19,6 +27,8 @@ export async function chamarAppsScript(ctx: Contexto, acao: "calendar_upsert" | 
       job: {
         id: j.id, codigo: j.codigo, cliente: j.cliente?.nome, cliente_pasta_id: j.cliente?.pasta_drive_id, cliente_grupo: j.cliente?.grupo,
         fast_email: j.fast?.email_calendario, fast_nome: j.fast?.nome, data: j.data, slot: j.slot, inicio: j.inicio, fim: j.fim,
+        // horas locais no formato do contrato documentado (docs/integracoes), além dos instantes ISO acima
+        inicio_hora: horaLocal(j.inicio), fim_hora: horaLocal(j.fim),
         data_edicao: j.data_edicao, bloco_edicao: j.bloco_edicao, calendar_event_id: j.calendar_event_id, calendar_event_edicao_id: j.calendar_event_edicao_id,
         link_app: `${ctx.urlApp}/jobs/${j.id}`,
       },

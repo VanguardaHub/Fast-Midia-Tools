@@ -7,7 +7,7 @@ import { salvarFast } from "@/lib/actions/cadastros";
 
 export interface FastForm { id: string; nome: string; emailCalendario: string; telefone: string; cor: string; nomeNotion: string; ativo: boolean; perfilId: string }
 export interface ContaDisponivel { id: string; nome: string; email: string }
-const vazio: FastForm = { id: "", nome: "", emailCalendario: "", telefone: "", cor: "#7C3AED", nomeNotion: "", ativo: true, perfilId: "" };
+const vazio: FastForm = { id: "", nome: "", emailCalendario: "", telefone: "", cor: "#D03134", nomeNotion: "", ativo: true, perfilId: "" };
 
 /**
  * RF-03 — formulário de Fast (novo ou edição). A edição chega pela lista ("Editar") via `inicial`;

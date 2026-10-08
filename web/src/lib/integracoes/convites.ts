@@ -54,10 +54,10 @@ async function enviarEmailConvite(email: string, nome: string | null, perfil: st
   const saudacao = nome ? `Olá, ${nome}!` : "Olá!";
   const html = `
 <div style="font-family:system-ui,Segoe UI,Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1a1523">
-  <h2 style="color:#6d28d9;margin:0 0 12px">Fast Mídia Tools</h2>
+  <h2 style="color:#d03134;margin:0 0 12px">Fast Mídia Tools</h2>
   <p>${saudacao}</p>
   <p>${convidadoPor} convidou você para acessar a plataforma da Fast Mídia (Vanguarda Martech) com o perfil <strong>${ROTULO_PERFIL[perfil] ?? perfil}</strong>.</p>
-  <p style="margin:24px 0"><a href="${link}" style="background:#6d28d9;color:#fff;padding:12px 20px;border-radius:12px;text-decoration:none;font-weight:600">Ativar meu acesso</a></p>
+  <p style="margin:24px 0"><a href="${link}" style="background:#d03134;color:#fff;padding:12px 20px;border-radius:12px;text-decoration:none;font-weight:600">Ativar meu acesso</a></p>
   <p style="font-size:13px;color:#6b6478">O link é de uso único e expira em pouco tempo. Se expirar, peça um novo convite à supervisão. Depois de entrar, defina uma senha em <em>Minha conta</em>.</p>
   <p style="font-size:12px;color:#6b6478">Se você não esperava este convite, ignore este e-mail.</p>
 </div>`;

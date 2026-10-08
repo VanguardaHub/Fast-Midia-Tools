@@ -1,23 +1,41 @@
 @import "tailwindcss";
 @import "maplibre-gl/dist/maplibre-gl.css";
 
-/* Paleta Vanguarda (roxo/vinho) — RNF-09: alvos de toque grandes, uso com uma mão */
+/*
+ * Design system — Fast Mídia Tools (docs/design-system.md)
+ * Paleta institucional da Vanguarda Martech: vermelho #D03134 (marca), preto #010A0E, branco.
+ * RNF-09: alvos de toque ≥ 48 px, uso com uma mão. Contraste AA (≥ 4,5:1) em texto normal.
+ */
 :root {
-  --background: #f7f6fb;
-  --foreground: #1a1523;
+  /* Marca (fixa nos dois temas; branco sobre #D03134 = 5,0:1) */
+  --brand: #d03134;
+  --brand-hover: #b42a2d;
+  --brand-foreground: #ffffff;
+  --brand-dark: #010a0e;
+
+  /* Superfícies e texto — tema claro */
+  --background: #f6f6f7;
+  --foreground: #0b1014;
   --card: #ffffff;
-  --muted: #6b6478;
-  --border: #e6e2ef;
-  --primary: #6d28d9;
+  --muted: #5f6771;
+  --border: #e3e5e9;
+
+  /* Semânticas */
+  --primary: #c92d30; /* texto/links/realces sobre superfícies claras (5,3:1 em branco) */
   --primary-foreground: #ffffff;
-  --accent: #9f1239;
+  --accent: #7a1f22; /* vinho: edição, destaques secundários */
   --success: #15803d;
   --warning: #b45309;
-  --danger: #b91c1c;
+  --danger: #991b1b;
   --info: #0369a1;
+  --ring: rgba(208, 49, 52, 0.35);
 }
 
 @theme inline {
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand-dark: var(--brand-dark);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -36,18 +54,19 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0f0c15;
-    --foreground: #f1eef8;
-    --card: #1a1523;
-    --muted: #a59db5;
-    --border: #2d2639;
-    --primary: #a78bfa;
-    --primary-foreground: #140b2e;
-    --accent: #fb7185;
+    --background: #0b0d10;
+    --foreground: #f3f4f6;
+    --card: #15181d;
+    --muted: #9aa3ad;
+    --border: #272c34;
+    --primary: #ff6b6f; /* 6,3:1 sobre o card escuro */
+    --primary-foreground: #1a0708;
+    --accent: #f08a8d;
     --success: #4ade80;
     --warning: #fbbf24;
     --danger: #f87171;
     --info: #38bdf8;
+    --ring: rgba(255, 107, 111, 0.4);
   }
 }
 
@@ -64,10 +83,14 @@ html, body {
   .btn, .btn-primary, .btn-outline, .btn-danger {
     @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-4 text-base font-semibold transition active:scale-[0.98] disabled:opacity-50;
   }
-  .btn-primary { @apply bg-primary text-primary-foreground; }
-  .btn-outline { @apply border border-border bg-card text-foreground; }
-  .btn-danger { @apply bg-danger text-white; }
+  .btn-primary { @apply bg-brand text-brand-foreground hover:bg-brand-hover; }
+  .btn-outline { @apply border border-border bg-card text-foreground hover:border-primary; }
+  .btn-danger { @apply border border-danger bg-card text-danger hover:bg-danger hover:text-white; }
   .input { @apply min-h-12 w-full rounded-xl border border-border bg-card px-3 text-base text-foreground outline-none focus:border-primary; }
   .label { @apply mb-1 block text-sm font-medium text-muted; }
   .badge { @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold; }
+  .divisor { @apply flex items-center gap-3 text-xs uppercase tracking-wide text-muted before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border; }
 }
+
+:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.input:focus { box-shadow: 0 0 0 3px var(--ring); }

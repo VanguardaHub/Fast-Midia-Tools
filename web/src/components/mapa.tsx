@@ -71,7 +71,7 @@ export function Mapa({ centro, zoom = 13, marcadores = [], editavel, onMover, al
 
     for (const mk of mks) {
       const el = document.createElement("div");
-      el.style.cssText = `width:18px;height:18px;border-radius:50%;background:${mk.cor ?? "#6d28d9"};border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)`;
+      el.style.cssText = `width:18px;height:18px;border-radius:50%;background:${mk.cor ?? "#d03134"};border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)`;
       const marker = new Marker({ element: el }).setLngLat([mk.lng, mk.lat]);
       if (mk.rotulo) marker.setPopup(new Popup({ offset: 12 }).setText(mk.rotulo));
       marker.addTo(m);
@@ -108,8 +108,8 @@ export function Mapa({ centro, zoom = 13, marcadores = [], editavel, onMover, al
     m.addControl(new NavigationControl({ showCompass: false }), "top-right");
     m.on("load", () => {
       m.addSource("geofences", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
-      m.addLayer({ id: "geofences-fill", type: "fill", source: "geofences", paint: { "fill-color": "#6d28d9", "fill-opacity": 0.12 } });
-      m.addLayer({ id: "geofences-line", type: "line", source: "geofences", paint: { "line-color": "#6d28d9", "line-width": 2 } });
+      m.addLayer({ id: "geofences-fill", type: "fill", source: "geofences", paint: { "fill-color": "#d03134", "fill-opacity": 0.12 } });
+      m.addLayer({ id: "geofences-line", type: "line", source: "geofences", paint: { "line-color": "#d03134", "line-width": 2 } });
       atualizar();
     });
     m.on("click", (e: MapMouseEvent) => propsRef.current.onMover?.(e.lngLat.lat, e.lngLat.lng));

@@ -60,7 +60,7 @@ Variáveis de ambiente: ver [`web/.env.example`](web/.env.example). Segredos nun
 
 ## Primeiro acesso
 
-1. Abrir a URL do Vercel e entrar com e-mail `@vanguardamartech.com.br` (link por e-mail).
+1. Abrir a URL do Vercel e entrar com a conta Google `@vanguardamartech.com.br` ou com e-mail e senha (convite em Cadastros → Acessos).
 2. O primeiro usuário vira **Admin**. Em *Cadastros → Fasts*, cadastrar os Fasts com o e-mail do calendário (eles entram com esse e-mail, mesmo Gmail).
 3. Em *Cadastros → Acessos*, convidar analistas e a supervisora.
 4. Em *Cadastros → Configurações*, revisar buffer, raio, precisão e retenção.

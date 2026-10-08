@@ -1,5 +1,5 @@
 import type { Contexto, ResultadoIntegracao } from "./tipos";
-import { googleCalendarConfigurado, obterToken } from "./google-calendar";
+import { ESCOPO_DRIVE, googleConfigurado, obterTokenGoogle, origemGoogle } from "./google-auth";
 import { caminhosParaData, estruturaConfigurada } from "./drive-estrutura";
 
 /**
@@ -14,12 +14,11 @@ import { caminhosParaData, estruturaConfigurada } from "./drive-estrutura";
  * Idempotente: procura cada subpasta pelo nome dentro da pasta-mãe e só cria o que falta.
  */
 
-const ESCOPO_DRIVE = "https://www.googleapis.com/auth/drive";
 const API = "https://www.googleapis.com/drive/v3";
 const PASTA = "application/vnd.google-apps.folder";
 
-export function googleDriveConfigurado(): boolean {
-  return googleCalendarConfigurado();
+export async function googleDriveConfigurado(): Promise<boolean> {
+  return googleConfigurado();
 }
 
 async function gapi<T>(token: string, caminho: string, init?: RequestInit): Promise<{ status: number; body: T }> {
@@ -35,14 +34,15 @@ interface Arquivo { id: string; name: string }
 type RespostaErro = { error?: { message?: string; code?: number } };
 
 async function tokenDrive(): Promise<string> {
-  const sub = process.env.GOOGLE_DRIVE_IMPERSONAR?.trim() || undefined;
-  return obterToken(sub, ESCOPO_DRIVE);
+  // OAuth: age como a conta conectada; conta de serviço: impersona o usuário indicado (delegação)
+  const sub = (await origemGoogle()) === "conta_servico" ? process.env.GOOGLE_DRIVE_IMPERSONAR?.trim() || undefined : undefined;
+  return obterTokenGoogle(ESCOPO_DRIVE, sub);
 }
 
 async function obterPasta(token: string, id: string): Promise<Arquivo> {
   const r = await gapi<Arquivo & RespostaErro>(token, `/files/${encodeURIComponent(id)}?fields=id,name,mimeType`);
   if (r.status === 404) throw new Error(`Pasta do cliente não encontrada no Drive (id ${id}). Confira o campo "ID da pasta no Drive" do cliente.`);
-  if (r.status === 403) throw new Error(`Sem permissão na pasta do cliente (id ${id}). Compartilhe a pasta com a conta de serviço como Editor ou configure GOOGLE_DRIVE_IMPERSONAR.`);
+  if (r.status === 403) throw new Error(`Sem permissão na pasta do cliente (id ${id}). A conta Google conectada precisa ser Editora da pasta (ou configure GOOGLE_DRIVE_IMPERSONAR na conta de serviço).`);
   if (r.status >= 300) throw new Error(`Drive GET ${r.status}: ${r.body.error?.message ?? ""}`);
   return { id: r.body.id, name: r.body.name };
 }

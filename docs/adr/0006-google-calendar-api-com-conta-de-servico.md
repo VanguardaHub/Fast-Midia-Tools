@@ -21,6 +21,10 @@ Decisão da gerência do projeto ao revisar a integração à luz da agenda pró
 2. **A escrita do job no Calendar (RF-62) permanece como espelho opcional**: lembrete nativo no celular do Fast, ligado apenas quando a conta de serviço existir; sem ela nada muda.
 3. **Drive pela mesma conta de serviço** (`google-drive.ts`): a pasta de ingest `!INSTITUCIONAL/BANCO DE IMAGENS/MM NOME/DD-MM` (e `VÍDEOS/...`) é garantida a partir do **ID da pasta do cliente**, criando só o que falta; estrutura configurável por `DRIVE_ESTRUTURA`. Em Drives compartilhados do Workspace, impersonar um usuário com acesso (`GOOGLE_DRIVE_IMPERSONAR`, escopo `drive`). O WhatsApp de novo job aguarda a pasta existir (até 3 tentativas) para enviar o link certo. Apps Script continua como alternativa para ambos.
 
+## Revisão 2 de 08/10/2026 — conta Google corporativa conectada por OAuth
+
+A gerência definiu que as integrações usam a conta **diana.savi@vanguardamartech.com.br** (Admin do sistema), sem conta de serviço. Implementação: fluxo OAuth 2.0 web (acesso offline, `prompt=consent`) iniciado pelo Admin em Cadastros → Integrações; o token de atualização fica na tabela `integracao_credencial` (migração 0015), sem políticas RLS, acessível só ao service_role. `google-auth.ts` resolve o token com prioridade OAuth → conta de serviço. No Calendar, o evento é criado no calendário da conta conectada com o Fast como convidado; no Drive, a conta conectada precisa ser Editora das pastas dos clientes. Riscos: dependência de uma pessoa (ao sair da empresa, reconectar com outra conta) e segredo do cliente OAuth no Vercel (rotacionar; o atual foi exposto em conversa em 30/09).
+
 ## Consequências
 
 - Passa a existir uma credencial de longa duração (chave da conta de serviço) no Vercel: rotacionar a cada 90 dias e restringir a delegação ao escopo `calendar`.

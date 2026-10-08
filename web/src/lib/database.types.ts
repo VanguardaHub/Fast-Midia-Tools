@@ -130,6 +130,12 @@ export type Database = {
           { foreignKeyName: "excecao_solicitada_por_fkey"; columns: ["solicitada_por"]; isOneToOne: false; referencedRelation: "perfil"; referencedColumns: ["id"] },
         ];
       };
+      integracao_credencial: {
+        Row: { atualizado_em: string; conectado_por: string | null; conta_email: string; escopos: string[]; provedor: string; refresh_token: string };
+        Insert: { atualizado_em?: string; conectado_por?: string | null; conta_email: string; escopos?: string[]; provedor: string; refresh_token: string };
+        Update: { atualizado_em?: string; conectado_por?: string | null; conta_email?: string; escopos?: string[]; provedor?: string; refresh_token?: string };
+        Relationships: [];
+      };
       indisponibilidade: {
         Row: { criado_em: string; criado_por: string | null; data: string; fast_id: string; id: string; motivo: string | null; slot: Database["public"]["Enums"]["slot_tipo"] | null };
         Insert: { criado_em?: string; criado_por?: string | null; data: string; fast_id: string; id?: string; motivo?: string | null; slot?: Database["public"]["Enums"]["slot_tipo"] | null };

@@ -16,7 +16,19 @@ Sem credencial, nada quebra: a fila acumula `calendar_*` e `drive_verificar` em 
 
 O Apps Script exigia um endpoint publicado numa conta Google (`access: DOMAIN`), código mantido fora do repositório e uma conta pessoal como executora (protótipo em `dog.smf@gmail.com`). A conta de serviço é credencial corporativa, auditável, rotacionável, e o código fica no mesmo repositório, com testes. O contrato do Apps Script continua suportado como alternativa (`apps-script.ts`), sem a ação `disponibilidade`.
 
-## 3. Configuração (uma vez, TI ou gerência)
+## 3a. Caminho adotado em 08/10/2026 — conta Google corporativa conectada (OAuth)
+
+Decisão da gerência: as integrações agem como a conta **diana.savi@vanguardamartech.com.br**, sem conta de serviço nem Admin do Workspace.
+
+1. **Google Cloud → Credenciais → cliente OAuth "Aplicativo da Web"** (já existe: `38179161838-…apps.googleusercontent.com`): adicionar o URI de redirecionamento autorizado `https://fast-midia-tools.vercel.app/api/google/callback`. Na tela de consentimento, incluir a conta como usuária de teste se o app estiver em modo "Testing" (ou publicar para o domínio interno).
+2. Vercel: `GOOGLE_OAUTH_CLIENT_ID` e `GOOGLE_OAUTH_CLIENT_SECRET` (configurados em 08/10).
+3. Logada como Admin, a Diana abre **Cadastros → Integrações → Conectar conta Google**, autoriza Calendar e Drive (acesso offline). O token de atualização fica em `integracao_credencial`, legível só pelo service_role.
+4. Pré-requisito de acesso: a conta conectada precisa ser **Editora** das pastas dos clientes no Drive (ou membro do Drive compartilhado) e ter calendário próprio. Os eventos de gravação são criados no calendário dela com o Fast como convidado; o Fast recebe no calendário dele.
+5. Desconectar: botão na mesma tela; para revogar de vez, também em myaccount.google.com/permissions.
+
+Prioridade: conta conectada > conta de serviço (seção 3) > Apps Script.
+
+## 3. Configuração alternativa — conta de serviço (TI)
 
 1. **Google Cloud:** criar projeto, ativar **Google Calendar API** e **Google Drive API**, criar **conta de serviço** e baixar a chave JSON.
 2. **Workspace Admin → Segurança → Controles de API → Delegação em todo o domínio:** adicionar o ID de cliente da conta de serviço com os escopos `https://www.googleapis.com/auth/calendar` e `https://www.googleapis.com/auth/drive`.

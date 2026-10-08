@@ -60,7 +60,8 @@ Tratamento de **dados de geolocalização de colaboradores** (dado pessoal com p
 | Contato de cliente | nome e WhatsApp do contato | contato do cliente | IX (relação comercial) | enquanto ativo | `cliente` |
 | Indisponibilidade (08/10) | dia, turno e motivo **opcional** informados pelo Fast | Fasts | V (organização da prestação) | enquanto houver contrato; o Fast remove quando quiser | `indisponibilidade` |
 
-> Revisão de 08/10/2026: a leitura do Google Calendar pessoal dos Fasts foi retirada do escopo (ADR-0006, revisão). O Calendar permanece apenas como espelho de escrita dos jobs, opcional. Isso elimina o acesso a compromissos pessoais e reduz o tratamento. O campo "motivo" da indisponibilidade é opcional justamente para não induzir o Fast a informar dados de saúde ou familiares.
+> Revisão de 08/10/2026 (2): as integrações Google agem como a conta corporativa diana.savi@vanguardamartech.com.br, conectada por OAuth; o token de atualização é guardado no banco com acesso restrito ao serviço (sem leitura por usuários). Nova categoria de dado tratado: credencial de integração (titular: Diana Savi; base: execução de contrato/legítimo interesse; retenção: até desconexão).
+> Revisão de 08/10/2026 (1): a leitura do Google Calendar pessoal dos Fasts foi retirada do escopo (ADR-0006, revisão). O Calendar permanece apenas como espelho de escrita dos jobs, opcional. Isso elimina o acesso a compromissos pessoais e reduz o tratamento. O campo "motivo" da indisponibilidade é opcional justamente para não induzir o Fast a informar dados de saúde ou familiares.
 
 **Não há** tratamento de dados sensíveis (art. 5º, II), de crianças/adolescentes, nem decisões automatizadas com efeito jurídico (art. 20). A geometria bruta nunca entra nas views analíticas nem na trilha de auditoria.
 

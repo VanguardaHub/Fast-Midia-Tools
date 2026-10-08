@@ -64,7 +64,7 @@ export default async function AgendaPage(props: PageProps<"/agenda">) {
       />
       <p className="text-xs text-muted">
         A agenda é a fonte da verdade. Slots marcados como “indisponível” foram informados pelo próprio Fast no app; a supervisora pode remover a marcação ou agendar mesmo assim, com motivo.
-        {googleCalendarConfigurado() ? " Cada job é espelhado no Google Calendar do Fast como lembrete (RF-62)." : ""}
+        {(await googleCalendarConfigurado()) ? " Cada job é espelhado no Google Calendar do Fast como lembrete (RF-62)." : ""}
       </p>
     </div>
   );

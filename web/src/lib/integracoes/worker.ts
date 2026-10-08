@@ -1,4 +1,3 @@
-import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
 import type { Contexto, ItemFila, JobCompleto, ResultadoIntegracao } from "./tipos";
 import { espelharNotion } from "./notion";
@@ -6,18 +5,13 @@ import { enviarWhatsapp } from "./whatsapp";
 import { enviarEmail } from "./email";
 import { chamarAppsScript } from "./apps-script";
 import { calendarDelete, calendarUpsert, googleCalendarConfigurado } from "./google-calendar";
+import { clienteAdmin } from "@/lib/supabase/admin";
 import { driveVerificar, googleDriveConfigurado } from "./google-drive";
 
 /**
  * RNF-08 — worker da outbox: idempotente (chave única), com fila e nova tentativa (backoff exponencial).
  * Executa com service_role; nunca exposto ao cliente. Disparado pelo cron do Vercel (vercel.json).
  */
-export function clienteAdmin() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const chave = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !chave) throw new Error("SUPABASE_SERVICE_ROLE_KEY não configurada");
-  return createClient<Database>(url, chave, { auth: { persistSession: false, autoRefreshToken: false } });
-}
 
 async function carregarJob(admin: ReturnType<typeof clienteAdmin>, jobId: string): Promise<JobCompleto | null> {
   const { data } = await admin
@@ -36,7 +30,7 @@ async function executar(item: ItemFila, ctx: Contexto): Promise<ResultadoIntegra
       // Novo job: a mensagem leva o link da pasta de ingest; se o Drive está integrado e a pasta ainda não
       // existe, adia até 3 tentativas (backoff da fila) para não mandar "pasta ainda não criada" à toa.
       const evento = payload.evento ?? "novo_job";
-      const driveIntegrado = googleDriveConfigurado() || Boolean(process.env.APPS_SCRIPT_URL && process.env.APPS_SCRIPT_TOKEN);
+      const driveIntegrado = (await googleDriveConfigurado()) || Boolean(process.env.APPS_SCRIPT_URL && process.env.APPS_SCRIPT_TOKEN);
       if (evento === "novo_job" && driveIntegrado && ctx.job.cliente?.pasta_drive_id && !ctx.job.pasta_ingest_url && item.tentativas < 3) {
         return { ok: false, erro: "aguardando a pasta de ingest (drive_verificar) para enviar o WhatsApp com o link" };
       }
@@ -44,10 +38,10 @@ async function executar(item: ItemFila, ctx: Contexto): Promise<ResultadoIntegra
     }
     case "email_send": return enviarEmail(ctx, payload.evento ?? "aviso");
     // Calendar: API oficial com conta de serviço (ADR-0006) quando configurada; senão, Apps Script (decisão 7.1)
-    case "calendar_upsert": return googleCalendarConfigurado() ? calendarUpsert(ctx) : chamarAppsScript(ctx, "calendar_upsert");
-    case "calendar_delete": return googleCalendarConfigurado() ? calendarDelete(ctx) : chamarAppsScript(ctx, "calendar_delete");
+    case "calendar_upsert": return (await googleCalendarConfigurado()) ? calendarUpsert(ctx) : chamarAppsScript(ctx, "calendar_upsert");
+    case "calendar_delete": return (await googleCalendarConfigurado()) ? calendarDelete(ctx) : chamarAppsScript(ctx, "calendar_delete");
     // Drive: API oficial com a conta de serviço quando configurada; senão, Apps Script (decisão 7.1)
-    case "drive_verificar": return googleDriveConfigurado() ? driveVerificar(ctx) : chamarAppsScript(ctx, "drive_verificar");
+    case "drive_verificar": return (await googleDriveConfigurado()) ? driveVerificar(ctx) : chamarAppsScript(ctx, "drive_verificar");
     case "push_send": return { ok: true, resultado: { ignorado: "push não implementado nesta fase" } };
     default: return { ok: false, erro: `tipo desconhecido ${item.tipo}`, descartar: true };
   }

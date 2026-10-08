@@ -1,66 +1,18 @@
-import { createSign } from "node:crypto";
 import type { Contexto, ResultadoIntegracao } from "./tipos";
+import { ESCOPO_CALENDAR, googleConfigurado, obterTokenGoogle, origemGoogle } from "./google-auth";
 
 /**
- * RF-10 / RF-62 — Google Calendar pela API oficial, com conta de serviço (ADR-0006).
- * Dois modos:
- *   • impersonar (padrão): delegação em todo o domínio (Workspace Admin) — a conta de serviço age como o
- *     próprio Fast (`sub` = e-mail do calendário) e grava no calendário principal dele; bloqueios são lidos
- *     do calendário do Fast.
- *   • compartilhado: `GOOGLE_CALENDAR_ID` de um calendário corporativo compartilhado com a conta de serviço
- *     (permissão "fazer alterações"); o Fast entra como convidado e os bloqueios são lidos desse calendário.
- * Idempotência: cada evento carrega `extendedProperties.private.fmt_job_id`; o id do evento fica em `job.calendar_event_id`.
+ * RF-62 — espelho opcional do job no Google Calendar (ADR-0006, revisões de 08/10/2026).
+ * Com conta Google conectada por OAuth (padrão): o evento é criado no calendário dessa conta
+ * (ou em GOOGLE_CALENDAR_ID) com o Fast como convidado — ele recebe o convite no calendário dele.
+ * Com conta de serviço: impersona o Fast (delegação) ou usa o calendário compartilhado.
+ * Não lê nada do calendário dos Fasts. Idempotência por `extendedProperties.private.fmt_chave`.
  */
 
-interface ContaServico { client_email: string; private_key: string; token_uri?: string }
-const ESCOPO = "https://www.googleapis.com/auth/calendar";
 const API = "https://www.googleapis.com/calendar/v3";
 
-function lerContaServico(): ContaServico | null {
-  const bruto = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
-  if (!bruto) return null;
-  try {
-    const texto = bruto.trim().startsWith("{") ? bruto : Buffer.from(bruto, "base64").toString("utf8");
-    const j = JSON.parse(texto) as ContaServico;
-    if (!j.client_email || !j.private_key) return null;
-    return { ...j, private_key: j.private_key.replace(/\\n/g, "\n") };
-  } catch {
-    return null;
-  }
-}
-
-export function googleCalendarConfigurado(): boolean {
-  return lerContaServico() !== null;
-}
-
-export function modoCalendar(): "impersonar" | "compartilhado" {
-  return process.env.GOOGLE_CALENDAR_ID ? "compartilhado" : "impersonar";
-}
-
-const cacheToken = new Map<string, { token: string; expira: number }>();
-
-/** Token OAuth 2.0 por JWT assinado (RS256); `sub` = usuário a impersonar (delegação em todo o domínio); `escopo` padrão Calendar. */
-export async function obterToken(sub?: string, escopo: string = ESCOPO): Promise<string> {
-  const sa = lerContaServico();
-  if (!sa) throw new Error("GOOGLE_SERVICE_ACCOUNT_JSON não configurada");
-  const chave = `${escopo}|${sub ?? "__sa__"}`;
-  const agora = Math.floor(Date.now() / 1000);
-  const emCache = cacheToken.get(chave);
-  if (emCache && emCache.expira > agora + 60) return emCache.token;
-
-  const b64 = (o: unknown) => Buffer.from(JSON.stringify(o)).toString("base64url");
-  const cabecalho = b64({ alg: "RS256", typ: "JWT" });
-  const corpo = b64({ iss: sa.client_email, scope: escopo, aud: sa.token_uri ?? "https://oauth2.googleapis.com/token", iat: agora, exp: agora + 3600, ...(sub ? { sub } : {}) });
-  const assinatura = createSign("RSA-SHA256").update(`${cabecalho}.${corpo}`).sign(sa.private_key, "base64url");
-  const r = await fetch(sa.token_uri ?? "https://oauth2.googleapis.com/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer", assertion: `${cabecalho}.${corpo}.${assinatura}` }),
-  });
-  const j = (await r.json()) as { access_token?: string; expires_in?: number; error?: string; error_description?: string };
-  if (!r.ok || !j.access_token) throw new Error(`Google OAuth: ${j.error ?? r.status} ${j.error_description ?? ""}`.trim());
-  cacheToken.set(chave, { token: j.access_token, expira: agora + (j.expires_in ?? 3600) });
-  return j.access_token;
+export async function googleCalendarConfigurado(): Promise<boolean> {
+  return googleConfigurado();
 }
 
 async function gapi<T>(token: string, caminho: string, init?: RequestInit): Promise<{ status: number; body: T }> {
@@ -74,8 +26,11 @@ async function gapi<T>(token: string, caminho: string, init?: RequestInit): Prom
 interface Alvo { token: string; calendarId: string; convidado?: string }
 
 async function alvoDoFast(email: string): Promise<Alvo> {
-  if (modoCalendar() === "compartilhado") return { token: await obterToken(), calendarId: process.env.GOOGLE_CALENDAR_ID!, convidado: email };
-  return { token: await obterToken(email), calendarId: "primary" };
+  const origem = await origemGoogle();
+  if (origem === "oauth" || process.env.GOOGLE_CALENDAR_ID) {
+    return { token: await obterTokenGoogle(ESCOPO_CALENDAR), calendarId: process.env.GOOGLE_CALENDAR_ID ?? "primary", convidado: email };
+  }
+  return { token: await obterTokenGoogle(ESCOPO_CALENDAR, email), calendarId: "primary" };
 }
 
 type Evento = {
@@ -90,25 +45,25 @@ type Evento = {
 
 async function upsertEvento(alvo: Alvo, idAtual: string | null, evento: Evento): Promise<string> {
   const corpo = { ...evento, ...(alvo.convidado ? { attendees: [{ email: alvo.convidado }] } : {}) };
+  const cal = encodeURIComponent(alvo.calendarId);
   if (idAtual) {
-    const r = await gapi<{ id?: string; error?: { message?: string } }>(alvo.token, `/calendars/${encodeURIComponent(alvo.calendarId)}/events/${encodeURIComponent(idAtual)}`, { method: "PATCH", body: JSON.stringify(corpo) });
+    const r = await gapi<{ id?: string; error?: { message?: string } }>(alvo.token, `/calendars/${cal}/events/${encodeURIComponent(idAtual)}?sendUpdates=${alvo.convidado ? "all" : "none"}`, { method: "PATCH", body: JSON.stringify(corpo) });
     if (r.status < 300 && r.body.id) return r.body.id;
     if (r.status !== 404 && r.status !== 410) throw new Error(`Calendar PATCH ${r.status}: ${r.body.error?.message ?? ""}`);
   }
-  // procura por id do job (idempotência quando o id gravado se perdeu)
-  const busca = await gapi<{ items?: { id: string }[] }>(alvo.token, `/calendars/${encodeURIComponent(alvo.calendarId)}/events?privateExtendedProperty=${encodeURIComponent(`fmt_chave=${evento.extendedProperties.private.fmt_chave}`)}&maxResults=1`);
+  const busca = await gapi<{ items?: { id: string }[] }>(alvo.token, `/calendars/${cal}/events?privateExtendedProperty=${encodeURIComponent(`fmt_chave=${evento.extendedProperties.private.fmt_chave}`)}&maxResults=1`);
   const existente = busca.body.items?.[0]?.id;
   if (existente) {
-    const r = await gapi<{ id?: string }>(alvo.token, `/calendars/${encodeURIComponent(alvo.calendarId)}/events/${encodeURIComponent(existente)}`, { method: "PATCH", body: JSON.stringify(corpo) });
+    const r = await gapi<{ id?: string }>(alvo.token, `/calendars/${cal}/events/${encodeURIComponent(existente)}`, { method: "PATCH", body: JSON.stringify(corpo) });
     if (r.status < 300 && r.body.id) return r.body.id;
   }
-  const r = await gapi<{ id?: string; error?: { message?: string } }>(alvo.token, `/calendars/${encodeURIComponent(alvo.calendarId)}/events?sendUpdates=${alvo.convidado ? "all" : "none"}`, { method: "POST", body: JSON.stringify(corpo) });
+  const r = await gapi<{ id?: string; error?: { message?: string } }>(alvo.token, `/calendars/${cal}/events?sendUpdates=${alvo.convidado ? "all" : "none"}`, { method: "POST", body: JSON.stringify(corpo) });
   if (r.status >= 300 || !r.body.id) throw new Error(`Calendar POST ${r.status}: ${r.body.error?.message ?? ""}`);
   return r.body.id;
 }
 
 async function excluirEvento(alvo: Alvo, id: string): Promise<void> {
-  const r = await gapi<{ error?: { message?: string } }>(alvo.token, `/calendars/${encodeURIComponent(alvo.calendarId)}/events/${encodeURIComponent(id)}`, { method: "DELETE" });
+  const r = await gapi<{ error?: { message?: string } }>(alvo.token, `/calendars/${encodeURIComponent(alvo.calendarId)}/events/${encodeURIComponent(id)}?sendUpdates=${alvo.convidado ? "all" : "none"}`, { method: "DELETE" });
   if (r.status >= 300 && r.status !== 404 && r.status !== 410) throw new Error(`Calendar DELETE ${r.status}: ${r.body.error?.message ?? ""}`);
 }
 
@@ -116,7 +71,7 @@ function fuso(): string {
   return process.env.FMT_TIMEZONE ?? "America/Manaus";
 }
 
-/** RF-62 — cria/atualiza o evento do job (e o da edição, quando houver) no calendário do Fast. */
+/** RF-62 — cria/atualiza o evento do job (e o da edição, quando houver). */
 export async function calendarUpsert(ctx: Contexto): Promise<ResultadoIntegracao> {
   const j = ctx.job;
   if (!j.fast?.email_calendario) return { ok: false, erro: "job sem e-mail de calendário do Fast", descartar: true };
@@ -128,6 +83,7 @@ export async function calendarUpsert(ctx: Contexto): Promise<ResultadoIntegracao
     j.briefing?.roteiro ? `Roteiro: ${j.briefing.roteiro}` : null,
     j.precisa_99 ? "Precisa de 99 (guardar comprovantes de ida e volta)" : null,
     j.prazo_material ? `Prazo do material bruto: ${j.prazo_material}` : null,
+    j.pasta_ingest_url ? `Pasta de ingest: ${j.pasta_ingest_url}` : null,
     `Abrir no app: ${link}`,
   ].filter(Boolean).join("\n");
 
@@ -159,7 +115,7 @@ export async function calendarUpsert(ctx: Contexto): Promise<ResultadoIntegracao
     idEdicao = null;
   }
 
-  return { ok: true, resultado: { calendar_event_id: idJob, calendar_event_edicao_id: idEdicao, modo: modoCalendar() }, patchJob: { calendar_event_id: idJob, calendar_event_edicao_id: idEdicao } };
+  return { ok: true, resultado: { calendar_event_id: idJob, calendar_event_edicao_id: idEdicao, calendario: alvo.calendarId, origem: await origemGoogle() }, patchJob: { calendar_event_id: idJob, calendar_event_edicao_id: idEdicao } };
 }
 
 /** RF-62 — remove os eventos do job (cancelamento). */
@@ -170,4 +126,3 @@ export async function calendarDelete(ctx: Contexto): Promise<ResultadoIntegracao
   for (const id of [j.calendar_event_id, j.calendar_event_edicao_id]) if (id) await excluirEvento(alvo, id);
   return { ok: true, resultado: { excluidos: [j.calendar_event_id, j.calendar_event_edicao_id].filter(Boolean) }, patchJob: { calendar_event_id: null, calendar_event_edicao_id: null } };
 }
-

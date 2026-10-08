@@ -1,4 +1,3 @@
-import type { Database } from "@/lib/database.types";
 import type { Contexto, ItemFila, JobCompleto, ResultadoIntegracao } from "./tipos";
 import { espelharNotion } from "./notion";
 import { enviarWhatsapp } from "./whatsapp";
